@@ -1,0 +1,421 @@
+{
+  "users": [
+    {
+      "id": "usr-superadmin",
+      "username": "superadmin",
+      "password": "1234",
+      "name": "Jahongir Olimov",
+      "role": "superadmin",
+      "roleLabel": "Bosh Admin (Super Admin)",
+      "roleTitle": "Tizim Asoschisi & Bosh Administrator",
+      "avatar": "👑",
+      "email": "superadmin@edulingua.uz",
+      "phone": "+998 71 100-00-01",
+      "badge": "Bosh Admin 👑",
+      "department": "Boshqaruv & Bosh Arxitektura",
+      "since": "2020"
+    },
+    {
+      "id": "usr-director",
+      "username": "director",
+      "password": "1234",
+      "name": "Dr. Rustam Karimov",
+      "role": "director",
+      "roleLabel": "Direktor (Headmaster)",
+      "roleTitle": "O'quv Markaz Bosh Direktori",
+      "avatar": "🏛️",
+      "email": "director@edulingua.uz",
+      "phone": "+998 71 200-11-00",
+      "badge": "Rahbariyat",
+      "department": "Boshqaruv va Strategiya",
+      "since": "2022"
+    },
+    {
+      "id": "usr-admin",
+      "username": "admin",
+      "password": "1234",
+      "name": "Madina Rahimova",
+      "role": "admin",
+      "roleLabel": "Administrator (Admin)",
+      "roleTitle": "Tizim va Xodimlar Boshqaruvchisi",
+      "avatar": "⚙️",
+      "email": "admin@edulingua.uz",
+      "phone": "+998 90 999-00-11",
+      "badge": "Tizim Nazorati",
+      "department": "Ma'muriyat & Moliya",
+      "since": "2023"
+    },
+    {
+      "id": "usr-teacher",
+      "username": "teacher",
+      "password": "1234",
+      "name": "Azizbek Toshmatov",
+      "role": "teacher",
+      "roleLabel": "O'qituvchi (Instructor)",
+      "roleTitle": "Katta Til Ustozi (IELTS Senior Instructor)",
+      "avatar": "👨‍🏫",
+      "email": "teacher@edulingua.uz",
+      "phone": "+998 93 111-22-33",
+      "badge": "IELTS 8.5 Band",
+      "department": "Chet Tillari Kafedrasi",
+      "since": "2024"
+    },
+    {
+      "id": "usr-std-101",
+      "username": "student",
+      "password": "1234",
+      "name": "Jasurbek Aliyev",
+      "role": "student",
+      "roleLabel": "O'quvchi (Student)",
+      "roleTitle": "IELTS Mastery Talabasi",
+      "avatar": "👨‍🎓",
+      "email": "jasurbek@edulingua.uz",
+      "phone": "+998 90 123-45-67",
+      "studentId": "std-101",
+      "badge": "Top O'quvchi ⭐",
+      "group": "IELTS Mastery (B2-C1)",
+      "level": "B2",
+      "since": "2026"
+    },
+    {
+      "id": "usr-std-102",
+      "username": "madina",
+      "password": "1234",
+      "name": "Madinabonu Karimova",
+      "role": "student",
+      "roleLabel": "O'quvchi (Student)",
+      "roleTitle": "IELTS Mastery Talabasi",
+      "avatar": "👩‍🎓",
+      "email": "madina@edulingua.uz",
+      "phone": "+998 93 765-43-21",
+      "studentId": "std-102",
+      "badge": "⭐ Mutlaq Chempion",
+      "group": "IELTS Mastery (B2-C1)",
+      "level": "C1",
+      "since": "2026"
+    },
+    {
+      "id": "usr-std-103",
+      "username": "sardor",
+      "password": "1234",
+      "name": "Sardorbek Rahimov",
+      "role": "student",
+      "roleLabel": "O'quvchi (Student)",
+      "roleTitle": "General English Talabasi",
+      "avatar": "👨‍💻",
+      "email": "sardor@edulingua.uz",
+      "phone": "+998 97 333-22-11",
+      "studentId": "std-103",
+      "badge": "🚀 O'sishda davom etmoqda",
+      "group": "General English (B1)",
+      "level": "B1",
+      "since": "2026"
+    },
+    {
+      "id": "usr-std-104",
+      "username": "dildora",
+      "password": "1234",
+      "name": "Dildora Usmonova",
+      "role": "student",
+      "roleLabel": "O'quvchi (Student)",
+      "roleTitle": "General English Talabasi",
+      "avatar": "👩‍🔬",
+      "email": "dildora@edulingua.uz",
+      "phone": "+998 99 444-55-66",
+      "studentId": "std-104",
+      "badge": "💡 Faol O'rganuvchi",
+      "group": "General English (B1)",
+      "level": "B1",
+      "since": "2026"
+    },
+    {
+      "id": "usr-std-105",
+      "username": "bekzod",
+      "password": "1234",
+      "name": "Bekzod Xolmatov",
+      "role": "student",
+      "roleLabel": "O'quvchi (Student)",
+      "roleTitle": "Beginner Intensive Talabasi",
+      "avatar": "👨‍🎨",
+      "email": "bekzod@edulingua.uz",
+      "phone": "+998 91 888-99-00",
+      "studentId": "std-105",
+      "badge": "⚠️ Qo'shimcha dars kerak",
+      "group": "Beginner Intensive (A1-A2)",
+      "level": "A2",
+      "since": "2026"
+    },
+    {
+      "id": "usr-std-106",
+      "username": "zilola",
+      "password": "1234",
+      "name": "Zilola Saidova",
+      "role": "student",
+      "roleLabel": "O'quvchi (Student)",
+      "roleTitle": "Beginner Intensive Talabasi",
+      "avatar": "👩‍🏫",
+      "email": "zilola@edulingua.uz",
+      "phone": "+998 94 555-11-22",
+      "studentId": "std-106",
+      "badge": "🌟 Intizom Namoyandasi",
+      "group": "Beginner Intensive (A1-A2)",
+      "level": "A2",
+      "since": "2026"
+    }
+  ],
+  "students": [
+    {
+      "id": "std-101",
+      "name": "Jasurbek Aliyev",
+      "email": "jasurbek@edulingua.uz",
+      "group": "IELTS Mastery (B2-C1)",
+      "level": "B2",
+      "phone": "+998 90 123-45-67",
+      "avatar": "👨‍🎓",
+      "color": "#3b82f6",
+      "enrolledDate": "2026-01-15",
+      "attendance": {
+        "2026-08-17": "present",
+        "2026-08-16": "present",
+        "2026-08-15": "present",
+        "2026-08-14": "late",
+        "2026-08-13": "present"
+      },
+      "grades": [
+        {
+          "id": "gr-1",
+          "subject": "IELTS Mock Test #1",
+          "score": 68,
+          "maxScore": 80,
+          "percentage": 85,
+          "gradeLetter": "A",
+          "bandScore": "7.5 Band (C1)",
+          "sections": [
+            { "name": "Reading", "score": 17, "maxScore": 20, "percentage": 85 },
+            { "name": "Listening", "score": 18, "maxScore": 20, "percentage": 90 },
+            { "name": "Writing", "score": 16, "maxScore": 20, "percentage": 80 },
+            { "name": "Speaking", "score": 17, "maxScore": 20, "percentage": 85 }
+          ],
+          "date": "2026-08-16",
+          "note": "Listening va Reading a'lo darajada. Speaking bo'yicha ravonlik yuqori."
+        },
+        {
+          "id": "gr-2",
+          "subject": "Grammar & Vocabulary Check",
+          "score": 45,
+          "maxScore": 50,
+          "percentage": 90,
+          "gradeLetter": "A+",
+          "bandScore": "8.0 Band (C1)",
+          "sections": [
+            { "name": "Vocabulary", "score": 23, "maxScore": 25, "percentage": 92 },
+            { "name": "Grammar", "score": 22, "maxScore": 25, "percentage": 88 }
+          ],
+          "date": "2026-08-14",
+          "note": "Conditionals va Inversion mavzusi mukammal."
+        }
+      ],
+      "vocabCount": 42,
+      "badge": "🏆 Leksikon Qiroli"
+    },
+    {
+      "id": "std-102",
+      "name": "Madinabonu Karimova",
+      "email": "madina@edulingua.uz",
+      "group": "IELTS Mastery (B2-C1)",
+      "level": "C1",
+      "phone": "+998 93 765-43-21",
+      "avatar": "👩‍🎓",
+      "color": "#ec4899",
+      "enrolledDate": "2026-01-10",
+      "attendance": {
+        "2026-08-17": "present",
+        "2026-08-16": "present",
+        "2026-08-15": "present",
+        "2026-08-14": "present",
+        "2026-08-13": "present"
+      },
+      "grades": [
+        {
+          "id": "gr-4",
+          "subject": "IELTS Complete Mock Test",
+          "score": 75,
+          "maxScore": 80,
+          "percentage": 94,
+          "gradeLetter": "A+",
+          "bandScore": "8.5 Band (C2)",
+          "sections": [
+            { "name": "Reading", "score": 19, "maxScore": 20, "percentage": 95 },
+            { "name": "Listening", "score": 20, "maxScore": 20, "percentage": 100 },
+            { "name": "Writing", "score": 18, "maxScore": 20, "percentage": 90 },
+            { "name": "Speaking", "score": 18, "maxScore": 20, "percentage": 90 }
+          ],
+          "date": "2026-08-16",
+          "note": "Mutlaq yetakchi, barcha bo'limlarda teng yuqori mahorat!"
+        }
+      ],
+      "vocabCount": 65,
+      "badge": "⭐ Mutlaq Chempion"
+    },
+    {
+      "id": "std-103",
+      "name": "Sardorbek Rahimov",
+      "email": "sardor@edulingua.uz",
+      "group": "General English (B1)",
+      "level": "B1",
+      "phone": "+998 97 333-22-11",
+      "avatar": "👨‍💻",
+      "color": "#10b981",
+      "enrolledDate": "2026-02-01",
+      "attendance": {
+        "2026-08-17": "present",
+        "2026-08-16": "absent",
+        "2026-08-15": "present",
+        "2026-08-14": "present",
+        "2026-08-13": "excused"
+      },
+      "grades": [
+        {
+          "id": "gr-6",
+          "subject": "Midterm Language Exam",
+          "score": 47,
+          "maxScore": 80,
+          "percentage": 59,
+          "gradeLetter": "C",
+          "bandScore": "5.5 Band (B1)",
+          "sections": [
+            { "name": "Reading", "score": 13, "maxScore": 20, "percentage": 65 },
+            { "name": "Listening", "score": 10, "maxScore": 20, "percentage": 50 },
+            { "name": "Vocabulary", "score": 14, "maxScore": 20, "percentage": 70 },
+            { "name": "Grammar", "score": 10, "maxScore": 20, "percentage": 50 }
+          ],
+          "date": "2026-08-15",
+          "note": "Reading 13/20 (65%), Listening 10/20 (50%). Tinglab tushunish ustida ko'proq ishlash zarur."
+        }
+      ],
+      "vocabCount": 28,
+      "badge": "🚀 O'sishda davom etmoqda"
+    },
+    {
+      "id": "std-104",
+      "name": "Dildora Usmonova",
+      "email": "dildora@edulingua.uz",
+      "group": "General English (B1)",
+      "level": "B1",
+      "phone": "+998 99 444-55-66",
+      "avatar": "👩‍🔬",
+      "color": "#8b5cf6",
+      "enrolledDate": "2026-02-05",
+      "attendance": {
+        "2026-08-17": "present",
+        "2026-08-16": "present",
+        "2026-08-15": "late",
+        "2026-08-14": "present",
+        "2026-08-13": "present"
+      },
+      "grades": [
+        {
+          "id": "gr-8",
+          "subject": "Weekly Progress Test",
+          "score": 51,
+          "maxScore": 60,
+          "percentage": 85,
+          "gradeLetter": "A",
+          "bandScore": "7.0 Band (B2)",
+          "sections": [
+            { "name": "Reading", "score": 18, "maxScore": 20, "percentage": 90 },
+            { "name": "Listening", "score": 16, "maxScore": 20, "percentage": 80 },
+            { "name": "Vocabulary", "score": 17, "maxScore": 20, "percentage": 85 }
+          ],
+          "date": "2026-08-15",
+          "note": "So'z boyligi va matnni tushunish sezilarli darajada kengaygan."
+        }
+      ],
+      "vocabCount": 35,
+      "badge": "💡 Faol O'rganuvchi"
+    },
+    {
+      "id": "std-105",
+      "name": "Bekzod Xolmatov",
+      "email": "bekzod@edulingua.uz",
+      "group": "Beginner Intensive (A1-A2)",
+      "level": "A2",
+      "phone": "+998 91 888-99-00",
+      "avatar": "👨‍🎨",
+      "color": "#f59e0b",
+      "enrolledDate": "2026-03-01",
+      "attendance": {
+        "2026-08-17": "absent",
+        "2026-08-16": "present",
+        "2026-08-15": "absent",
+        "2026-08-14": "excused",
+        "2026-08-13": "present"
+      },
+      "grades": [
+        {
+          "id": "gr-10",
+          "subject": "Elementary Skills Test",
+          "score": 29,
+          "maxScore": 50,
+          "percentage": 58,
+          "gradeLetter": "C",
+          "bandScore": "4.5 Band (A2)",
+          "sections": [
+            { "name": "Reading", "score": 12, "maxScore": 20, "percentage": 60 },
+            { "name": "Listening", "score": 8, "maxScore": 15, "percentage": 53 },
+            { "name": "Vocabulary", "score": 9, "maxScore": 15, "percentage": 60 }
+          ],
+          "date": "2026-08-14",
+          "note": "Davomatni yaxshilash va kundalik audio mashqlarni bajarish zarur."
+        }
+      ],
+      "vocabCount": 15,
+      "badge": "⚠️ Qo'shimcha dars kerak"
+    },
+    {
+      "id": "std-106",
+      "name": "Zilola Saidova",
+      "email": "zilola@edulingua.uz",
+      "group": "Beginner Intensive (A1-A2)",
+      "level": "A2",
+      "phone": "+998 94 555-11-22",
+      "avatar": "👩‍🏫",
+      "color": "#06b6d4",
+      "enrolledDate": "2026-03-05",
+      "attendance": {
+        "2026-08-17": "present",
+        "2026-08-16": "present",
+        "2026-08-15": "present",
+        "2026-08-14": "present",
+        "2026-08-13": "present"
+      },
+      "grades": [
+        {
+          "id": "gr-11",
+          "subject": "Basic Skills Check",
+          "score": 46,
+          "maxScore": 50,
+          "percentage": 92,
+          "gradeLetter": "A+",
+          "bandScore": "7.5 Band (B2)",
+          "sections": [
+            { "name": "Reading", "score": 19, "maxScore": 20, "percentage": 95 },
+            { "name": "Listening", "score": 14, "maxScore": 15, "percentage": 93 },
+            { "name": "Vocabulary", "score": 13, "maxScore": 15, "percentage": 87 }
+          ],
+          "date": "2026-08-14",
+          "note": "Intizomli va har bir bo'limda puxta tayyorgarlik ko'rgan."
+        }
+      ],
+      "vocabCount": 38,
+      "badge": "🌟 Intizom Namoyandasi"
+    }
+  ],
+  "studentTodos": [],
+  "pomodoroSessions": {
+    "completedToday": 0,
+    "totalFocusMinutes": 0,
+    "currentStreak": 1,
+    "targetSessions": 4
+  }
+}
