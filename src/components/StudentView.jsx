@@ -33,7 +33,12 @@ import {
   saveStoredStudentTasks,
   getStoredPomodoroStats,
   saveStoredPomodoroStats,
-  exportDatabaseToJson 
+  exportDatabaseToJson,
+  getUserIncomingMessages,
+  getUnreadMessagesCount,
+  markMessageAsRead,
+  markAllMessagesAsRead,
+  sendNewMessage
 } from '../services/storage';
 
 export const StudentView = ({ 
@@ -44,7 +49,13 @@ export const StudentView = ({
   onSaveWord = () => {},
   onDeleteSavedWord = () => {}
 }) => {
-  const [activeStudentTab, setActiveStudentTab] = useState('dictionary'); // 'dictionary', 'timer-todo', 'grades', 'attendance', 'flashcards', 'ai-tutor'
+  const [activeStudentTab, setActiveStudentTab] = useState('dictionary'); // 'dictionary', 'timer-todo', 'grades', 'attendance', 'flashcards', 'ai-tutor', 'messages'
+  const [studentMessagesFilter, setStudentMessagesFilter] = useState('all'); // 'all', 'unread', 'leadership', 'teachers'
+  const [studentReplyText, setStudentReplyText] = useState('');
+  const [studentReplyTarget, setStudentReplyTarget] = useState(null);
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [replySuccess, setReplySuccess] = useState(false);
+  const [liveMessagesRefresh, setLiveMessagesRefresh] = useState(0);
   
   // Find current student dynamically from live students state
   const currentStudent = students.find(s => 
@@ -491,6 +502,20 @@ export const StudentView = ({
         >
           <IconBot size={18} />
           <span>24/7 AI Repetitor</span>
+        </button>
+
+        <button
+          type="button"
+          className={`student-nav-btn ${activeStudentTab === 'messages' ? 'active-student-tab' : ''}`}
+          onClick={() => setActiveStudentTab('messages')}
+        >
+          <IconSend size={18} />
+          <span>SMS & Xabarlar</span>
+          {getUnreadMessagesCount(activeUser) > 0 && (
+            <span className="tab-pill-count animate-pulse-danger">
+              {getUnreadMessagesCount(activeUser)}
+            </span>
+          )}
         </button>
       </div>
 
@@ -1289,6 +1314,271 @@ export const StudentView = ({
           </div>
         </div>
       )}
+
+      {/* =========================================================
+          TAB 7: SMS & BILDIRISHNOMALAR (MESSAGES FOR STUDENT)
+          ========================================================= */}
+      {activeStudentTab === 'messages' && (() => {
+        const studentUserId = activeUser?.id || activeUser?.username || 'student';
+        const incoming = getUserIncomingMessages(activeUser);
+        const unreadCount = incoming.filter(m => m.senderId !== studentUserId && (!m.readBy || !m.readBy.includes(studentUserId))).length;
+
+        const filtered = incoming.filter(m => {
+          const isUnread = !m.readBy || !m.readBy.includes(studentUserId);
+          if (studentMessagesFilter === 'unread') return isUnread;
+          if (studentMessagesFilter === 'leadership') return m.senderRole === 'director' || m.senderRole === 'admin' || m.senderRole === 'superadmin';
+          if (studentMessagesFilter === 'teachers') return m.senderRole === 'teacher';
+          return true;
+        });
+
+        const handleStudentReplySubmit = (e) => {
+          e.preventDefault();
+          if (!studentReplyText.trim()) return;
+
+          sendNewMessage({
+            senderUser: activeUser,
+            recipientType: studentReplyTarget?.senderRole ? (studentReplyTarget.senderRole === 'teacher' ? 'teachers' : 'all') : 'all',
+            targetUserId: studentReplyTarget?.senderId || null,
+            targetName: studentReplyTarget ? `${studentReplyTarget.senderName} (${studentReplyTarget.senderRoleLabel})` : 'Ma\'muriyat',
+            title: `Javob: ${studentReplyTarget?.title || 'Xabarnoma'}`,
+            text: studentReplyText.trim(),
+            priority: 'normal'
+          });
+
+          setReplySuccess(true);
+          setStudentReplyText('');
+          setLiveMessagesRefresh(prev => prev + 1);
+
+          setTimeout(() => {
+            setShowReplyModal(false);
+            setReplySuccess(false);
+            setStudentReplyTarget(null);
+          }, 1200);
+        };
+
+        return (
+          <div className="student-tab-content animate-fade-in">
+            {/* Header Banner */}
+            <div className="student-messages-banner mb-4">
+              <div className="flex items-center gap-3">
+                <div className="messages-avatar-badge animate-ring-pulse">
+                  <IconSend size={24} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-dark-navy">Menga Yuborilgan SMS & Xabarnomalar</h3>
+                  <p className="text-sm text-muted">
+                    Direktor, Admin, Bosh Admin va O'qituvchilaringizdan kelgan rasmiy xabarlar
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="radial-button-primary text-xs py-1.5 px-3 animate-btn-pop"
+                  onClick={() => {
+                    setStudentReplyTarget({ senderName: "Direktor & Boshqaruv Ma'muriyati", senderRoleLabel: "Ma'muriyat", title: "Savol / Murojaat" });
+                    setShowReplyModal(true);
+                  }}
+                >
+                  <IconPlus size={14} />
+                  <span>Ma'muriyatga Xabar Yozish</span>
+                </button>
+
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    className="radial-button-secondary text-xs py-1.5 px-3"
+                    onClick={() => {
+                      markAllMessagesAsRead(studentUserId);
+                      setLiveMessagesRefresh(prev => prev + 1);
+                    }}
+                  >
+                    <IconCheck size={14} />
+                    <span>Barchasini o'qilgan qilish</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Filter chips */}
+            <div className="inbox-filter-chips mb-4">
+              <button
+                type="button"
+                className={`inbox-chip ${studentMessagesFilter === 'all' ? 'active-chip' : ''}`}
+                onClick={() => setStudentMessagesFilter('all')}
+              >
+                Barcha Xabarlar ({incoming.length})
+              </button>
+              <button
+                type="button"
+                className={`inbox-chip ${studentMessagesFilter === 'unread' ? 'active-chip' : ''}`}
+                onClick={() => setStudentMessagesFilter('unread')}
+              >
+                🔔 O'qilmagan ({unreadCount})
+              </button>
+              <button
+                type="button"
+                className={`inbox-chip ${studentMessagesFilter === 'leadership' ? 'active-chip' : ''}`}
+                onClick={() => setStudentMessagesFilter('leadership')}
+              >
+                🏛️ Rahbariyatdan (Direktor & Admin)
+              </button>
+              <button
+                type="button"
+                className={`inbox-chip ${studentMessagesFilter === 'teachers' ? 'active-chip' : ''}`}
+                onClick={() => setStudentMessagesFilter('teachers')}
+              >
+                👨‍🏫 O'qituvchilardan
+              </button>
+            </div>
+
+            {/* Messages Cards */}
+            <div className="messages-cards-list">
+              {filtered.length === 0 ? (
+                <div className="empty-state-box text-center">
+                  <span className="text-3xl mb-2 block">📭</span>
+                  <h4>Xabarlar mavjud emas</h4>
+                  <p className="text-muted text-sm">Sizga yo'llangan yangi SMS xabarnomalar shu yerda chiqadi.</p>
+                </div>
+              ) : (
+                filtered.map((msg) => {
+                  const isUnread = !msg.readBy || !msg.readBy.includes(studentUserId);
+                  return (
+                    <div 
+                      key={msg.id} 
+                      className={`message-card-item animate-pop-in ${isUnread ? 'unread-message-card' : ''}`}
+                    >
+                      <div className="msg-card-top-row">
+                        <div className="msg-sender-info">
+                          <span className="msg-sender-avatar">{msg.senderAvatar || '👤'}</span>
+                          <div>
+                            <div className="msg-sender-name-wrap">
+                              <strong className="msg-sender-name">{msg.senderName}</strong>
+                              <span className={`role-tag-pill role-${msg.senderRole}`}>
+                                {msg.senderRoleLabel || msg.senderRole}
+                              </span>
+                              {isUnread && <span className="unread-dot animate-pulse-danger"></span>}
+                            </div>
+                            <div className="msg-meta-sub">
+                              <span>Yuborilgan: <strong className="text-blue-900">{msg.recipientTargetName}</strong></span>
+                              <span>•</span>
+                              <span className="msg-time">{msg.createdAt}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="msg-card-actions">
+                          {msg.priority === 'high' && (
+                            <span className="priority-high-badge">
+                              ⚠️ Muhim Eslatma
+                            </span>
+                          )}
+                          {isUnread && (
+                            <button
+                              type="button"
+                              className="radial-button-secondary text-xs py-1 px-2.5"
+                              onClick={() => {
+                                markMessageAsRead(msg.id, studentUserId);
+                                setLiveMessagesRefresh(prev => prev + 1);
+                              }}
+                            >
+                              <IconCheck size={14} />
+                              <span>O'qildi</span>
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="radial-button-secondary text-xs py-1 px-2.5"
+                            onClick={() => {
+                              setStudentReplyTarget(msg);
+                              setShowReplyModal(true);
+                            }}
+                          >
+                            <IconSend size={12} />
+                            <span>Javob Yozish</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <h4 className="msg-card-title">{msg.title}</h4>
+                      <p className="msg-card-text">{msg.text}</p>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Reply / Message Modal */}
+            {showReplyModal && (
+              <div className="director-modal-backdrop animate-fade-in">
+                <div className="director-modal-card animate-pop-in">
+                  <div className="modal-header-line">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <IconSend size={20} className="text-blue" />
+                      <h3 className="modal-title">
+                        {studentReplyTarget ? `Javob: ${studentReplyTarget.senderName}` : "Ma'muriyatga Xabar"}
+                      </h3>
+                    </div>
+                    <button
+                      type="button"
+                      className="modal-close-btn"
+                      onClick={() => setShowReplyModal(false)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {replySuccess && (
+                    <div className="login-success-alert animate-fade-in mb-3">
+                      <IconCheckCircle size={18} />
+                      <span>Xabaringiz ma'muriyatga muvaffaqiyatli jo'natildi!</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleStudentReplySubmit} className="modal-form">
+                    <div className="form-group">
+                      <label className="form-label">Kimga:</label>
+                      <input
+                        type="text"
+                        className="radial-input"
+                        value={studentReplyTarget ? `${studentReplyTarget.senderName} (${studentReplyTarget.senderRoleLabel})` : "Direktor & Boshqaruv Markazi"}
+                        disabled
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Xabar Matni:</label>
+                      <textarea
+                        rows={4}
+                        className="radial-textarea"
+                        placeholder="Savol, taklif yoki javobingizni yozing..."
+                        value={studentReplyText}
+                        onChange={(e) => setStudentReplyText(e.target.value)}
+                        required
+                      ></textarea>
+                    </div>
+
+                    <div className="modal-actions-footer">
+                      <button
+                        type="button"
+                        className="radial-button-secondary"
+                        onClick={() => setShowReplyModal(false)}
+                      >
+                        Bekor Qilish
+                      </button>
+                      <button type="submit" className="radial-button-primary animate-btn-pop">
+                        <IconSend size={16} />
+                        <span>Jo'natish</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 };

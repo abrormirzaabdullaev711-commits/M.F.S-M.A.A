@@ -1,0 +1,230 @@
+// Comprehensive Multi-Language Dictionary (O'zbek, Русский, English) for EduLingua AI Platform
+
+export const TRANSLATIONS = {
+  uz: {
+    // Brand & Roles
+    brandTitle: "EduLingua AI Platform",
+    brandSubtitle: "O'quv Markaz Boshqaruv & Imtihon Ekotizimi",
+    roleSuperadmin: "Bosh Admin",
+    roleDirector: "Direktor",
+    roleAdmin: "Administrator",
+    roleTeacher: "O'qituvchi",
+    roleStudent: "O'quvchi",
+
+    // Navigation Tabs
+    tabDashboard: "Boshqaruv Paneli",
+    tabDictionary: "Til & Lug'at",
+    tabTimerTodo: "Taymer & Rejalar",
+    tabStudents: "O'quvchilar",
+    tabAttendance: "Davomat",
+    tabGrading: "Baholash",
+    tabAgents: "AI Agentlar",
+    tabMessages: "SMS & Xabarlar",
+    tabFlashcards: "Flashcardlar",
+    tabAiTutor: "AI Repetitor",
+    tabGrades: "Mening Baholarim",
+    tabOverview: "Umumiy Ko'rinish",
+    tabTeachers: "O'qituvchilar",
+    tabGroups: "Guruhlar & Jadvallar",
+    tabReports: "Moliya & Hisobotlar",
+    tabAiAdvisor: "AI Maslahatchi",
+    tabUsersRoles: "Foydalanuvchilar & Rollar",
+    tabSms: "SMS & Xabarnomalar",
+    tabLogs: "Tizim Loglari",
+
+    // Actions & Buttons
+    btnSwitchUser: "Foydalanuvchini Almashtirish",
+    btnEditProfile: "Profilni Tahrirlash",
+    btnLogout: "Tizimdan Chiqish",
+    btnSendSms: "SMS Yuborish",
+    btnMarkAllRead: "Barchasini o'qilgan deb belgilash",
+    btnSave: "Saqlash",
+    btnCancel: "Bekor Qilish",
+    btnDelete: "O'chirish",
+    btnSearch: "Qidirish...",
+    btnCompose: "Yangi Xabar Yozish",
+    btnReply: "Javob Yozish",
+    btnAddStudent: "Yangi O'quvchi Qo'shish",
+    btnAddUser: "Yangi Foydalanuvchi Qo'shish",
+    btnAddGroup: "Yangi Guruh Ochish",
+
+    // Notifications & Messages
+    notificationsTitle: "Bildirishnomalar",
+    unreadCount: "ta o'qilmagan",
+    noNotifications: "Yangi bildirishnomalar mavjud emas",
+    incomingMessages: "Kelgan Xabarlar",
+    sentMessages: "Yuborilgan SMSlar",
+    messageFrom: "Kimdan",
+    messageTo: "Kimga",
+    messageSubject: "Mavzu",
+    messageText: "Xabar Matni",
+    allRecipients: "Barcha Foydalanuvchilar",
+    allStudents: "Barcha O'quvchilar",
+    allTeachers: "Barcha O'qituvchilar",
+    specificGroup: "Alohida Bir Guruhga",
+    specificUser: "Alohida Foydalanuvchiga",
+    smsSentSuccess: "SMS barcha qabul qiluvchilarga muvaffaqiyatli jo'natildi!",
+    smsDelivered: "Yetkazildi (100%)",
+    priorityHigh: "Muhim",
+    priorityNormal: "Oddiy",
+
+    // Language Selector
+    langUz: "O'zbekcha 🇺🇿",
+    langRu: "Русский 🇷🇺",
+    langEn: "English 🇬🇧",
+    selectLanguage: "Tilni tanlang"
+  },
+
+  ru: {
+    // Brand & Roles
+    brandTitle: "EduLingua AI Platform",
+    brandSubtitle: "Экосистема управления учебным центром и экзаменами",
+    roleSuperadmin: "Главный Админ",
+    roleDirector: "Директор",
+    roleAdmin: "Администратор",
+    roleTeacher: "Преподаватель",
+    roleStudent: "Студент",
+
+    // Navigation Tabs
+    tabDashboard: "Панель управления",
+    tabDictionary: "Язык и Словарь",
+    tabTimerTodo: "Таймер и Планы",
+    tabStudents: "Студенты",
+    tabAttendance: "Посещаемость",
+    tabGrading: "Оценивание",
+    tabAgents: "AI Агенты",
+    tabMessages: "SMS и Сообщения",
+    tabFlashcards: "Флэшкарты",
+    tabAiTutor: "AI Репетитор",
+    tabGrades: "Мои Оценки",
+    tabOverview: "Обзор",
+    tabTeachers: "Преподаватели",
+    tabGroups: "Группы и Расписание",
+    tabReports: "Финансы и Отчеты",
+    tabAiAdvisor: "AI Советник",
+    tabUsersRoles: "Пользователи и Роли",
+    tabSms: "SMS и Уведомления",
+    tabLogs: "Системные логи",
+
+    // Actions & Buttons
+    btnSwitchUser: "Сменить пользователя",
+    btnEditProfile: "Редактировать профиль",
+    btnLogout: "Выйти из системы",
+    btnSendSms: "Отправить SMS",
+    btnMarkAllRead: "Отметить все как прочитанные",
+    btnSave: "Сохранить",
+    btnCancel: "Отмена",
+    btnDelete: "Удалить",
+    btnSearch: "Поиск...",
+    btnCompose: "Написать сообщение",
+    btnReply: "Ответить",
+    btnAddStudent: "Добавить студента",
+    btnAddUser: "Добавить пользователя",
+    btnAddGroup: "Открыть новую группу",
+
+    // Notifications & Messages
+    notificationsTitle: "Уведомления",
+    unreadCount: "непрочитанных",
+    noNotifications: "Новых уведомлений нет",
+    incomingMessages: "Входящие сообщения",
+    sentMessages: "Отправленные SMS",
+    messageFrom: "От кого",
+    messageTo: "Кому",
+    messageSubject: "Тема",
+    messageText: "Текст сообщения",
+    allRecipients: "Всем пользователям",
+    allStudents: "Всем студентам",
+    allTeachers: "Всем преподавателям",
+    specificGroup: "Отдельной группе",
+    specificUser: "Конкретному пользователю",
+    smsSentSuccess: "SMS успешно отправлено всем получателям!",
+    smsDelivered: "Доставлено (100%)",
+    priorityHigh: "Важно",
+    priorityNormal: "Обычное",
+
+    // Language Selector
+    langUz: "O'zbekcha 🇺🇿",
+    langRu: "Русский 🇷🇺",
+    langEn: "English 🇬🇧",
+    selectLanguage: "Выберите язык"
+  },
+
+  en: {
+    // Brand & Roles
+    brandTitle: "EduLingua AI Platform",
+    brandSubtitle: "Education Center Management & Exam Ecosystem",
+    roleSuperadmin: "Super Admin",
+    roleDirector: "Director",
+    roleAdmin: "Administrator",
+    roleTeacher: "Teacher",
+    roleStudent: "Student",
+
+    // Navigation Tabs
+    tabDashboard: "Dashboard",
+    tabDictionary: "Language & Dictionary",
+    tabTimerTodo: "Timer & Todos",
+    tabStudents: "Students",
+    tabAttendance: "Attendance",
+    tabGrading: "Grading (GPA)",
+    tabAgents: "AI Agents",
+    tabMessages: "SMS & Messages",
+    tabFlashcards: "Flashcards",
+    tabAiTutor: "AI Tutor",
+    tabGrades: "My Grades",
+    tabOverview: "Overview",
+    tabTeachers: "Instructors",
+    tabGroups: "Groups & Schedule",
+    tabReports: "Finance & Reports",
+    tabAiAdvisor: "AI Advisor",
+    tabUsersRoles: "Users & Roles",
+    tabSms: "SMS & Broadcast",
+    tabLogs: "System Logs",
+
+    // Actions & Buttons
+    btnSwitchUser: "Switch User",
+    btnEditProfile: "Edit Profile",
+    btnLogout: "Sign Out",
+    btnSendSms: "Send SMS",
+    btnMarkAllRead: "Mark all as read",
+    btnSave: "Save",
+    btnCancel: "Cancel",
+    btnDelete: "Delete",
+    btnSearch: "Search...",
+    btnCompose: "Compose Message",
+    btnReply: "Reply",
+    btnAddStudent: "Add New Student",
+    btnAddUser: "Add New User",
+    btnAddGroup: "Create New Group",
+
+    // Notifications & Messages
+    notificationsTitle: "Notifications",
+    unreadCount: "unread",
+    noNotifications: "No new notifications",
+    incomingMessages: "Inbox Messages",
+    sentMessages: "Sent SMS Messages",
+    messageFrom: "From",
+    messageTo: "To",
+    messageSubject: "Subject",
+    messageText: "Message Body",
+    allRecipients: "All Users",
+    allStudents: "All Students",
+    allTeachers: "All Teachers",
+    specificGroup: "Specific Group",
+    specificUser: "Specific User",
+    smsSentSuccess: "SMS successfully broadcast to all recipients!",
+    smsDelivered: "Delivered (100%)",
+    priorityHigh: "High",
+    priorityNormal: "Normal",
+
+    // Language Selector
+    langUz: "O'zbekcha 🇺🇿",
+    langRu: "Русский 🇷🇺",
+    langEn: "English 🇬🇧",
+    selectLanguage: "Select Language"
+  }
+};
+
+export const getTranslation = (key, lang = 'uz') => {
+  const selectedLang = TRANSLATIONS[lang] || TRANSLATIONS.uz;
+  return selectedLang[key] || TRANSLATIONS.uz[key] || key;
+};

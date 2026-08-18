@@ -4,7 +4,7 @@
       "id": "usr-superadmin",
       "username": "superadmin",
       "password": "1234",
-      "name": "Jahongir Olimov",
+      "name": "Abrorbek Mirzaabdullaev",
       "role": "superadmin",
       "roleLabel": "Bosh Admin (Super Admin)",
       "roleTitle": "Tizim Asoschisi & Bosh Administrator",
@@ -30,21 +30,7 @@
       "department": "Boshqaruv va Strategiya",
       "since": "2022"
     },
-    {
-      "id": "usr-admin",
-      "username": "admin",
-      "password": "1234",
-      "name": "Madina Rahimova",
-      "role": "admin",
-      "roleLabel": "Administrator (Admin)",
-      "roleTitle": "Tizim va Xodimlar Boshqaruvchisi",
-      "avatar": "⚙️",
-      "email": "admin@edulingua.uz",
-      "phone": "+998 90 999-00-11",
-      "badge": "Tizim Nazorati",
-      "department": "Ma'muriyat & Moliya",
-      "since": "2023"
-    },
+
     {
       "id": "usr-teacher",
       "username": "teacher",

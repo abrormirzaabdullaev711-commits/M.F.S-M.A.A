@@ -24,15 +24,19 @@ import {
   getStoredAdminLogs, 
   saveStoredAdminLogs,
   getStoredUsers,
-  updateUserRoleInStorage 
+  updateUserRoleInStorage,
+  deleteStoredUser,
+  registerNewUser
 } from '../services/storage';
 import { GROUPS_LIST, ADMIN_DATA } from '../data/mockData';
+import { MessagesView } from './MessagesView';
 
 export const AdminView = ({ 
   students = [], 
   onAddStudent, 
   onDeleteStudent,
-  currentUser 
+  currentUser,
+  language = 'uz'
 }) => {
   const [activeAdminTab, setActiveAdminTab] = useState('users-roles'); // 'users-roles', 'students', 'groups', 'sms', 'logs'
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,6 +45,24 @@ export const AdminView = ({
   // Dynamic Users & Role Management state
   const [usersList, setUsersList] = useState(getStoredUsers);
   const [userRoleToast, setUserRoleToast] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('all');
+
+  // User deletion state & animation
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
+  const [deletingUserId, setDeletingUserId] = useState(null);
+
+  // New User Form Modal State
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserUsername, setNewUserUsername] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('1234');
+  const [newUserRole, setNewUserRole] = useState('student');
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserPhone, setNewUserPhone] = useState('');
+  const [newUserGroup, setNewUserGroup] = useState('IELTS Mastery (B2-C1)');
+  const [newUserLevel, setNewUserLevel] = useState('B2');
+  const [newUserAvatar, setNewUserAvatar] = useState('👨‍🎓');
 
   // Groups state
   const [groups, setGroups] = useState(getStoredAdminGroups);
@@ -106,7 +128,7 @@ export const AdminView = ({
     // Log action
     const newLog = {
       id: `log-${Date.now()}`,
-      user: `${currentUser?.name || 'Admin'}`,
+      user: `${currentUser?.name || 'Bosh Admin'}`,
       action: `${uName} ning roli "${roleLabels[targetRole]}" ga o'zgartirildi`,
       timestamp: new Date().toLocaleString(),
       ip: '192.168.1.12'
@@ -119,6 +141,99 @@ export const AdminView = ({
     setTimeout(() => {
       setUserRoleToast('');
     }, 4000);
+  };
+
+  // Request to delete a user account (opens custom modal)
+  const handleRequestDeleteUser = (usr) => {
+    setUserToDelete(usr);
+    setShowDeleteUserModal(true);
+  };
+
+  // Confirmed Delete User Handler
+  const handleConfirmDeleteUser = () => {
+    if (!userToDelete) return;
+
+    const targetId = userToDelete.id;
+    const targetName = userToDelete.name;
+    const targetUsername = userToDelete.username;
+    const targetRole = userToDelete.roleLabel || userToDelete.role;
+
+    // Trigger row exit animation
+    setDeletingUserId(targetId);
+    setShowDeleteUserModal(false);
+
+    setTimeout(() => {
+      const res = deleteStoredUser(targetId);
+      if (res.success) {
+        setUsersList(res.users);
+
+        // If this user has a student record, sync deletion
+        if (onDeleteStudent && (userToDelete.studentId || userToDelete.role === 'student')) {
+          onDeleteStudent(userToDelete.studentId || targetId);
+        }
+
+        // Add to audit logs
+        const newLog = {
+          id: `log-${Date.now()}`,
+          user: `${currentUser?.name || 'Bosh Admin'}`,
+          action: `🚨 Foydalanuvchi hisobi butunlay o'chirildi: ${targetName} (@${targetUsername}, ${targetRole})`,
+          timestamp: new Date().toLocaleString(),
+          ip: '192.168.1.12'
+        };
+        const updatedLogs = [newLog, ...logs];
+        setLogs(updatedLogs);
+        saveStoredAdminLogs(updatedLogs);
+
+        setUserRoleToast(`🗑️ "${targetName}" (@${targetUsername}) hisobi muvaffaqiyatli o'chirildi!`);
+        setTimeout(() => {
+          setUserRoleToast('');
+        }, 4500);
+      }
+      setDeletingUserId(null);
+      setUserToDelete(null);
+    }, 420);
+  };
+
+  // Handle Add New User of Any Role
+  const handleCreateUser = (e) => {
+    e.preventDefault();
+    if (!newUserName.trim() || !newUserUsername.trim()) return;
+
+    const res = registerNewUser({
+      name: newUserName.trim(),
+      username: newUserUsername.trim(),
+      password: newUserPassword.trim() || '1234',
+      role: newUserRole,
+      avatar: newUserAvatar,
+      email: newUserEmail.trim(),
+      phone: newUserPhone.trim(),
+      group: newUserGroup,
+      level: newUserLevel
+    });
+
+    setUsersList(res.users);
+
+    const newLog = {
+      id: `log-${Date.now()}`,
+      user: `${currentUser?.name || 'Bosh Admin'}`,
+      action: `✨ Yangi foydalanuvchi yaratildi: [${res.newUser.roleLabel}] ${res.newUser.name} (@${res.newUser.username})`,
+      timestamp: new Date().toLocaleString(),
+      ip: '192.168.1.12'
+    };
+    const updatedLogs = [newLog, ...logs];
+    setLogs(updatedLogs);
+    saveStoredAdminLogs(updatedLogs);
+
+    setUserRoleToast(`✅ "${res.newUser.name}" (@${res.newUser.username}) muvaffaqiyatli ro'yxatdan o'tkazildi!`);
+    setTimeout(() => setUserRoleToast(''), 4000);
+
+    // Reset Form
+    setNewUserName('');
+    setNewUserUsername('');
+    setNewUserPassword('1234');
+    setNewUserEmail('');
+    setNewUserPhone('');
+    setShowAddUserModal(false);
   };
 
   // Handle Add Student
@@ -301,12 +416,24 @@ export const AdminView = ({
 
   // Filter users
   const filteredUsers = usersList.filter((u) => {
-    return (
+    const matchesSearch =
       u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (u.username && u.username.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (u.phone && u.phone.includes(searchQuery))
-    );
+      (u.phone && u.phone.includes(searchQuery)) ||
+      (u.email && u.email.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesRole = userRoleFilter === 'all' || u.role === userRoleFilter;
+
+    return matchesSearch && matchesRole;
   });
+
+  // User counts by role
+  const countAllUsers = usersList.length;
+  const countStudents = usersList.filter((u) => u.role === 'student').length;
+  const countTeachers = usersList.filter((u) => u.role === 'teacher').length;
+  const countDirectors = usersList.filter((u) => u.role === 'director').length;
+  const countAdmins = usersList.filter((u) => u.role === 'admin').length;
+  const countSuperAdmins = usersList.filter((u) => u.role === 'superadmin').length;
 
   // Filter students
   const filteredStudents = students.filter((std) => {
@@ -328,11 +455,11 @@ export const AdminView = ({
           </div>
           <div>
             <div className="admin-badge-label">
-              <span>Boshqaruv & Rollar Nazorati</span>
+              <span className="animate-pulse-danger">👑 Boshqaruv & Rollar Nazorati</span>
             </div>
-            <h1 className="admin-title">Tizim Administratori Paneli</h1>
+            <h1 className="admin-title">Tizim Administratori & Bosh Admin Paneli</h1>
             <p className="admin-subtext">
-              Foydalanuvchilar va rollarni boshqarish (O'quvchi, O'qituvchi, Direktor, Admin), dars jadvallari va SMS markazi
+              Foydalanuvchilar hisoblarini o'chirish, rollarni boshqarish (O'quvchi, O'qituvchi, Direktor, Admin), dars jadvallari va SMS markazi
             </p>
           </div>
         </div>
@@ -340,7 +467,7 @@ export const AdminView = ({
         <div className="admin-header-actions">
           <button
             type="button"
-            className="radial-button-secondary"
+            className="radial-button-secondary animate-btn-pop"
             onClick={handleExportBackup}
             title="Barcha ma'lumotlarni JSON zaxirada yuklab olish"
           >
@@ -351,7 +478,7 @@ export const AdminView = ({
 
       {/* Role Change Toast Alert */}
       {userRoleToast && (
-        <div className="login-success-alert animate-pop-in">
+        <div className="login-success-alert animate-toast-slide">
           <IconCheckCircle size={20} />
           <strong>{userRoleToast}</strong>
         </div>
@@ -366,7 +493,7 @@ export const AdminView = ({
         >
           <IconShield size={18} />
           <span>Foydalanuvchilar & Rollar Boshqaruvi</span>
-          <span className="tab-pill-count">{usersList.length}</span>
+          <span className="tab-pill-count animate-count-pop">{usersList.length}</span>
         </button>
 
         <button
@@ -409,21 +536,114 @@ export const AdminView = ({
       </div>
 
       {/* =========================================================
-          TAB 1: USERS & ROLE ASSIGNMENT (O'QUVCHINI O'QITUVCHI / DIREKTOR / ADMIN QILISH)
+          TAB 1: USERS & ROLE ASSIGNMENT & ACCOUNT DELETION (SUPERADMIN & ADMIN)
           ========================================================= */}
       {activeAdminTab === 'users-roles' && (
         <div className="admin-tab-content animate-fade-in">
+          {/* Superadmin Master Control Banner */}
+          <div className="superadmin-badge-banner animate-fade-in">
+            <div className="superadmin-banner-glow"></div>
+            <div className="superadmin-banner-left">
+              <div className="superadmin-crown-icon-wrap animate-crown-float">
+                👑
+              </div>
+              <div>
+                <div className="superadmin-banner-title">
+                  Bosh Admin Master Nazorat & Hisoblar Boshqaruvi
+                </div>
+                <p className="superadmin-banner-desc">
+                  Bosh Admin (Super Administrator) barcha foydalanuvchilar (O'quvchi, O'qituvchi, Direktor, Administrator) hisoblarini butunlay o'chirish, rollarni o'zgartirish va yangi hisoblar yaratish to'liq vakolatiga ega.
+                </p>
+              </div>
+            </div>
+            <div className="superadmin-stat-pills">
+              <div className="superadmin-stat-pill">
+                <span>Jami Hisoblar:</span> <strong>{countAllUsers}</strong>
+              </div>
+              <div className="superadmin-stat-pill">
+                <span>👨‍🎓 O'quvchilar:</span> <strong>{countStudents}</strong>
+              </div>
+              <div className="superadmin-stat-pill">
+                <span>👨‍🏫 O'qituvchilar:</span> <strong>{countTeachers}</strong>
+              </div>
+              <div className="superadmin-stat-pill">
+                <span>👑 Boshqaruv:</span> <strong>{countSuperAdmins + countDirectors + countAdmins}</strong>
+              </div>
+            </div>
+          </div>
+
           <div className="admin-panel-card">
             <div className="panel-card-header">
               <div>
                 <h3 className="panel-title">
                   <IconShield size={20} />
-                  <span>Foydalanuvchilar Rollari va Huquqlarini Boshqarish</span>
+                  <span>Foydalanuvchilar Ro'yxati, Rollari va Hisoblarni O'chirish</span>
                 </h3>
                 <p className="panel-desc">
-                  Administrator va Bosh Admin istalgan foydalanuvchi/o'quvchi rolini O'qituvchi, Direktor yoki Adminga o'zgartirishi mumkin
+                  Bosh Admin istalgan foydalanuvchi hisobini butunlay o'chirish yoki rolini o'zgartirishi mumkin
                 </p>
               </div>
+
+              <button
+                type="button"
+                className="radial-button-primary animate-btn-pop"
+                onClick={() => setShowAddUserModal(true)}
+              >
+                <IconPlus size={18} />
+                <span>Yangi Foydalanuvchi Qo'shish</span>
+              </button>
+            </div>
+
+            {/* Role Filter Chips */}
+            <div className="role-filters-toolbar animate-fade-in">
+              <button
+                type="button"
+                className={`role-filter-chip ${userRoleFilter === 'all' ? 'active-filter' : ''}`}
+                onClick={() => setUserRoleFilter('all')}
+              >
+                <span>Barchasi</span>
+                <span className="filter-badge-num">{countAllUsers}</span>
+              </button>
+              <button
+                type="button"
+                className={`role-filter-chip ${userRoleFilter === 'student' ? 'active-filter' : ''}`}
+                onClick={() => setUserRoleFilter('student')}
+              >
+                <span>👨‍🎓 O'quvchilar</span>
+                <span className="filter-badge-num">{countStudents}</span>
+              </button>
+              <button
+                type="button"
+                className={`role-filter-chip ${userRoleFilter === 'teacher' ? 'active-filter' : ''}`}
+                onClick={() => setUserRoleFilter('teacher')}
+              >
+                <span>👨‍🏫 O'qituvchilar</span>
+                <span className="filter-badge-num">{countTeachers}</span>
+              </button>
+              <button
+                type="button"
+                className={`role-filter-chip ${userRoleFilter === 'director' ? 'active-filter' : ''}`}
+                onClick={() => setUserRoleFilter('director')}
+              >
+                <span>🏛️ Direktorlar</span>
+                <span className="filter-badge-num">{countDirectors}</span>
+              </button>
+              <button
+                type="button"
+                className={`role-filter-chip ${userRoleFilter === 'admin' ? 'active-filter' : ''}`}
+                onClick={() => setUserRoleFilter('admin')}
+              >
+                <span>⚙️ Administratorlar</span>
+                <span className="filter-badge-num">{countAdmins}</span>
+              </button>
+              <button
+                type="button"
+                className={`role-filter-chip ${userRoleFilter === 'superadmin' ? 'active-filter' : ''}`}
+                onClick={() => setUserRoleFilter('superadmin')}
+              >
+                <span>👑 Bosh Admin</span>
+                <span className="filter-badge-num">{countSuperAdmins}</span>
+              </button>
             </div>
 
             {/* Search toolbar */}
@@ -433,7 +653,7 @@ export const AdminView = ({
                 <input
                   type="text"
                   className="radial-input search-input"
-                  placeholder="Foydalanuvchi ismi, login yoki telefoni bo'yicha qidirish..."
+                  placeholder="Foydalanuvchi ismi, login, telefon yoki emaili bo'yicha qidirish..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -449,58 +669,98 @@ export const AdminView = ({
                     <th>Login & Email</th>
                     <th>Telefon Raqami</th>
                     <th>Joriy Roli</th>
-                    <th>Rolni O'zgartirish (Tezkor Tayinlash)</th>
+                    <th>Rolni O'zgartirish</th>
+                    <th>Amallar (Hisobni O'chirish)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredUsers.map((usr) => {
-                    const displayId = (usr.studentId || usr.id || '').toUpperCase();
-                    return (
-                      <tr key={usr.id} className="admin-table-row">
-                        <td>
-                          <div className="student-cell">
-                            <span className="student-avatar-circle">{usr.avatar || '👤'}</span>
-                            <div>
-                              <strong className="text-dark-navy">{usr.name}</strong>
-                              <div className="flex items-center gap-1 mt-0.5">
-                                <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-900 font-mono font-bold">
-                                  {displayId}
-                                </span>
-                                <span className="student-badge-mini">{usr.badge || 'Faol'}</span>
+                  {filteredUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '30px' }}>
+                        <div style={{ color: '#64748b', fontSize: '14px' }}>
+                          Hech qanday foydalanuvchi topilmadi.
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredUsers.map((usr) => {
+                      const displayId = (usr.studentId || usr.id || '').toUpperCase();
+                      const isCurrent =
+                        currentUser &&
+                        (currentUser.id === usr.id || currentUser.username === usr.username);
+
+                      return (
+                        <tr
+                          key={usr.id}
+                          className={`admin-table-row ${
+                            deletingUserId === usr.id ? 'user-row-deleting' : ''
+                          }`}
+                        >
+                          <td>
+                            <div className="student-cell">
+                              <span className="student-avatar-circle">{usr.avatar || '👤'}</span>
+                              <div>
+                                <strong className="text-dark-navy">{usr.name}</strong>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-900 font-mono font-bold">
+                                    {displayId}
+                                  </span>
+                                  <span className="student-badge-mini">{usr.badge || 'Faol'}</span>
+                                  {isCurrent && (
+                                    <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">
+                                      (Siz)
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="font-mono-code text-blue-900 font-semibold">@{usr.username}</div>
-                          <div className="text-xs text-blue-600 font-sans">{usr.email || `${usr.username}@edulingua.uz`}</div>
-                        </td>
-                        <td>
-                          <span className="phone-text">{usr.phone || '+998 90 000-00-00'}</span>
-                        </td>
-                        <td>
-                          <span className={`role-tag-pill role-${usr.role}`}>
-                            {usr.roleLabel || usr.role}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="role-change-cell">
-                            <select
-                              className="radial-select role-quick-select"
-                              value={usr.role}
-                              onChange={(e) => handlePromoteUser(usr.id, e.target.value)}
+                          </td>
+                          <td>
+                            <div className="font-mono-code text-blue-900 font-semibold">
+                              @{usr.username}
+                            </div>
+                            <div className="text-xs text-blue-600 font-sans">
+                              {usr.email || `${usr.username}@edulingua.uz`}
+                            </div>
+                          </td>
+                          <td>
+                            <span className="phone-text">{usr.phone || '+998 90 000-00-00'}</span>
+                          </td>
+                          <td>
+                            <span className={`role-tag-pill role-${usr.role}`}>
+                              {usr.roleLabel || usr.role}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="role-change-cell">
+                              <select
+                                className="radial-select role-quick-select"
+                                value={usr.role}
+                                onChange={(e) => handlePromoteUser(usr.id, e.target.value)}
+                              >
+                                <option value="student">👨‍🎓 O'quvchi (Student)</option>
+                                <option value="teacher">👨‍🏫 O'qituvchi (Teacher)</option>
+                                <option value="director">🏛️ Direktor (Director)</option>
+                                <option value="admin">⚙️ Administrator (Admin)</option>
+                                <option value="superadmin">👑 Bosh Admin (Super Admin)</option>
+                              </select>
+                            </div>
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className="admin-delete-user-btn"
+                              onClick={() => handleRequestDeleteUser(usr)}
+                              title={`"${usr.name}" hisobini butunlay o'chirish`}
                             >
-                              <option value="student">👨‍🎓 O'quvchi (Student)</option>
-                              <option value="teacher">👨‍🏫 O'qituvchi (Teacher)</option>
-                              <option value="director">🏛️ Direktor (Director)</option>
-                              <option value="admin">⚙️ Administrator (Admin)</option>
-                              <option value="superadmin">👑 Bosh Admin (Super Admin)</option>
-                            </select>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              <IconTrash size={14} />
+                              <span>O'chirish</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -702,111 +962,11 @@ export const AdminView = ({
           ========================================================= */}
       {activeAdminTab === 'sms' && (
         <div className="admin-tab-content animate-fade-in">
-          <div className="admin-two-col-layout">
-            <div className="admin-panel-card">
-              <div className="panel-card-header">
-                <h3 className="panel-title">
-                  <IconSend size={20} />
-                  <span>Tezkor SMS & Xabarnoma Yuborish</span>
-                </h3>
-              </div>
-
-              {smsSentSuccess && (
-                <div className="sms-success-banner animate-fade-in">
-                  <IconCheckCircle size={18} />
-                  <span>Xabarnoma barcha qabul qiluvchilarga muvaffaqiyatli jo'natildi!</span>
-                </div>
-              )}
-
-              <form onSubmit={handleSendBroadcastSms} className="sms-compose-form">
-                <div className="form-group">
-                  <label className="form-label">Kimga Yuborilsin?</label>
-                  <select
-                    className="radial-select"
-                    value={smsRecipientType}
-                    onChange={(e) => setSmsRecipientType(e.target.value)}
-                  >
-                    <option value="all">Barcha O'quvchilarga ({students.length} nafar)</option>
-                    <option value="group">Alohida Bir Guruhga</option>
-                    <option value="debtors">To'lov Eslatmasi Kutilayotganlarga</option>
-                  </select>
-                </div>
-
-                {smsRecipientType === 'group' && (
-                  <div className="form-group">
-                    <label className="form-label">Guruhni Tanlang:</label>
-                    <select
-                      className="radial-select"
-                      value={smsTargetGroup}
-                      onChange={(e) => setSmsTargetGroup(e.target.value)}
-                    >
-                      {GROUPS_LIST.filter((g) => g !== 'Barcha guruhlar').map((g) => (
-                        <option key={g} value={g}>{g}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                <div className="form-group">
-                  <label className="form-label">Tayyor SMS Shablonlari:</label>
-                  <div className="sms-template-chips">
-                    {ADMIN_DATA.broadcastTemplates.map((tpl) => (
-                      <button
-                        key={tpl.id}
-                        type="button"
-                        className="radial-button-secondary py-1 px-2 text-xs"
-                        onClick={() => setSmsMessageText(tpl.text)}
-                      >
-                        {tpl.title}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">SMS Matni:</label>
-                  <textarea
-                    rows={4}
-                    className="radial-textarea"
-                    value={smsMessageText}
-                    onChange={(e) => setSmsMessageText(e.target.value)}
-                    placeholder="Xabarnoma matnini kiriting..."
-                    required
-                  ></textarea>
-                </div>
-
-                <button type="submit" className="radial-button-primary w-full">
-                  <IconSend size={18} />
-                  <span>Ommaviy SMS Yuborish</span>
-                </button>
-              </form>
-            </div>
-
-            <div className="admin-panel-card">
-              <div className="panel-card-header">
-                <h3 className="panel-title">
-                  <IconClock size={20} />
-                  <span>Yuborilgan Xabarnomalar Jurnali</span>
-                </h3>
-              </div>
-
-              <div className="sms-history-list">
-                {smsHistory.map((item) => (
-                  <div key={item.id} className="sms-history-card">
-                    <div className="sms-history-header">
-                      <strong className="sms-recipient">{item.recipient}</strong>
-                      <span className="sms-time">{item.sentAt}</span>
-                    </div>
-                    <p className="sms-text">{item.text}</p>
-                    <div className="sms-status-line">
-                      <IconCheckCircle size={14} className="text-green" />
-                      <span>{item.status}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <MessagesView
+            currentUser={currentUser || { id: 'usr-admin', name: 'Madina Rahimova', role: 'admin', roleLabel: 'Administrator (Admin)', avatar: '⚙️' }}
+            students={students}
+            language={language}
+          />
         </div>
       )}
 
@@ -1061,6 +1221,228 @@ export const AdminView = ({
                 <button type="submit" className="radial-button-primary">
                   <IconCheck size={16} />
                   <span>Guruhni Ochish</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CONFIRM DELETE USER ACCOUNT (SUPERADMIN) */}
+      {showDeleteUserModal && userToDelete && (
+        <div className="delete-modal-backdrop animate-modal-backdrop">
+          <div className="delete-modal-card animate-modal-spring">
+            <div className="delete-modal-top-accent"></div>
+
+            <div className="delete-modal-header">
+              <div className="delete-danger-icon-circle animate-pulse-danger">
+                <IconTrash size={24} />
+              </div>
+              <div>
+                <h3 className="delete-modal-title">Foydalanuvchi Hisobini O'chirish</h3>
+                <p className="delete-modal-subtitle">
+                  Ushbu hisob tizimdan butunlay o'chiriladi
+                </p>
+              </div>
+            </div>
+
+            <div className="delete-target-preview-box">
+              <span className="delete-target-avatar">{userToDelete.avatar || '👤'}</span>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: 900, color: '#0f172a' }}>
+                  {userToDelete.name}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#2563eb', fontSize: '12.5px' }}>
+                    @{userToDelete.username}
+                  </span>
+                  <span className={`role-tag-pill role-${userToDelete.role}`} style={{ fontSize: '10.5px', padding: '2px 8px' }}>
+                    {userToDelete.roleLabel || userToDelete.role}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                  {userToDelete.email || `${userToDelete.username}@edulingua.uz`} • {userToDelete.phone || '+998 90 000-00-00'}
+                </div>
+              </div>
+            </div>
+
+            <div className="delete-warning-box animate-attention">
+              <strong>⚠️ Diqqat, ushbu amal qaytarilmaydi!</strong>
+              <div style={{ marginTop: '4px' }}>
+                Foydalanuvchining login paroli, ro'yxatdan o'tgan ma'lumotlari, dars statistikasi va unga biriktirilgan barcha yozuvlar LocalStorage bazasidan butunlay o'chiriladi.
+              </div>
+            </div>
+
+            <div className="delete-modal-actions">
+              <button
+                type="button"
+                className="radial-button-secondary"
+                onClick={() => {
+                  setShowDeleteUserModal(false);
+                  setUserToDelete(null);
+                }}
+              >
+                Bekor Qilish
+              </button>
+              <button
+                type="button"
+                className="btn-confirm-delete"
+                onClick={handleConfirmDeleteUser}
+              >
+                <IconTrash size={16} />
+                <span>Ha, Hisobni Butunlay O'chirish</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD NEW USER (ANY ROLE) */}
+      {showAddUserModal && (
+        <div className="director-modal-backdrop animate-fade-in">
+          <div className="director-modal-card animate-pop-in">
+            <div className="modal-header-line">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <IconShield size={22} className="text-blue" />
+                <h3 className="modal-title">Yangi Foydalanuvchi Hisobi Ochish</h3>
+              </div>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setShowAddUserModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUser} className="modal-form">
+              <div className="form-group">
+                <label className="form-label">Tizimdagi Roli:</label>
+                <select
+                  className="radial-select"
+                  value={newUserRole}
+                  onChange={(e) => {
+                    setNewUserRole(e.target.value);
+                    if (e.target.value === 'teacher') setNewUserAvatar('👨‍🏫');
+                    else if (e.target.value === 'director') setNewUserAvatar('🏛️');
+                    else if (e.target.value === 'admin') setNewUserAvatar('⚙️');
+                    else if (e.target.value === 'superadmin') setNewUserAvatar('👑');
+                    else setNewUserAvatar('👨‍🎓');
+                  }}
+                >
+                  <option value="student">👨‍🎓 O'quvchi (Student)</option>
+                  <option value="teacher">👨‍🏫 O'qituvchi (Teacher / Instructor)</option>
+                  <option value="director">🏛️ Direktor (Director / Headmaster)</option>
+                  <option value="admin">⚙️ Administrator (System Admin)</option>
+                  <option value="superadmin">👑 Bosh Admin (Super Administrator)</option>
+                </select>
+              </div>
+
+              <div className="form-row-2col">
+                <div className="form-group">
+                  <label className="form-label">F.I.Sh (To'liq Ism):</label>
+                  <input
+                    type="text"
+                    className="radial-input"
+                    placeholder="Masalan: Sardorbek Aliyev"
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Login (Username):</label>
+                  <input
+                    type="text"
+                    className="radial-input"
+                    placeholder="Masalan: sardor_al"
+                    value={newUserUsername}
+                    onChange={(e) => setNewUserUsername(e.target.value.toLowerCase().replace(/\s+/g, '_'))}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-row-2col">
+                <div className="form-group">
+                  <label className="form-label">Parol (Kamida 4 belgi):</label>
+                  <input
+                    type="text"
+                    className="radial-input"
+                    placeholder="1234"
+                    value={newUserPassword}
+                    onChange={(e) => setNewUserPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Telefon Raqami:</label>
+                  <input
+                    type="text"
+                    className="radial-input"
+                    placeholder="+998 90 123-45-67"
+                    value={newUserPhone}
+                    onChange={(e) => setNewUserPhone(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Email Manzili (Ixtiyoriy):</label>
+                <input
+                  type="email"
+                  className="radial-input"
+                  placeholder="masalan: sardor@edulingua.uz"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                />
+              </div>
+
+              {newUserRole === 'student' && (
+                <div className="form-row-2col">
+                  <div className="form-group">
+                    <label className="form-label">Guruh:</label>
+                    <select
+                      className="radial-select"
+                      value={newUserGroup}
+                      onChange={(e) => setNewUserGroup(e.target.value)}
+                    >
+                      {GROUPS_LIST.filter((g) => g !== 'Barcha guruhlar').map((g) => (
+                        <option key={g} value={g}>{g}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Daraja:</label>
+                    <select
+                      className="radial-select"
+                      value={newUserLevel}
+                      onChange={(e) => setNewUserLevel(e.target.value)}
+                    >
+                      <option value="A1">A1 — Beginner</option>
+                      <option value="A2">A2 — Elementary</option>
+                      <option value="B1">B1 — Intermediate</option>
+                      <option value="B2">B2 — Upper-Intermediate</option>
+                      <option value="C1">C1 — Advanced</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <div className="modal-actions-footer">
+                <button
+                  type="button"
+                  className="radial-button-secondary"
+                  onClick={() => setShowAddUserModal(false)}
+                >
+                  Bekor Qilish
+                </button>
+                <button type="submit" className="radial-button-primary animate-btn-pop">
+                  <IconCheck size={16} />
+                  <span>Hisobni Yaratish</span>
                 </button>
               </div>
             </form>

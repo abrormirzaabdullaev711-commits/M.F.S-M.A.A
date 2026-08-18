@@ -12,6 +12,7 @@ import { AttendanceView } from './components/AttendanceView';
 import { GradingView } from './components/GradingView';
 import { AgentsView } from './components/AgentsView';
 import { TimerAndTodoView } from './components/TimerAndTodoView';
+import { MessagesView } from './components/MessagesView';
 
 import {
   getStoredAuthUser,
@@ -25,17 +26,25 @@ import {
   getAgentChats,
   saveAgentChats,
   getStoredTodos,
-  saveStoredTodos
+  saveStoredTodos,
+  getStoredLanguage,
+  saveStoredLanguage
 } from './services/storage';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(getStoredAuthUser);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [theme, setTheme] = useState(getTheme);
+  const [language, setLanguageState] = useState(getStoredLanguage);
   const [students, setStudents] = useState(getStoredStudents);
   const [savedWords, setSavedWords] = useState(getSavedWords);
   const [agentChats, setAgentChats] = useState(getAgentChats);
   const [todos, setTodos] = useState(getStoredTodos);
+
+  const handleSetLanguage = (lang) => {
+    setLanguageState(lang);
+    saveStoredLanguage(lang);
+  };
 
   // Cross-tab preset contexts
   const [presetWordForAgent, setPresetWordForAgent] = useState(null);
@@ -239,6 +248,8 @@ function App() {
         onSwitchUser={handleSwitchUser}
         onLogout={handleLogout}
         onUpdateCurrentUser={setCurrentUser}
+        language={language}
+        setLanguage={handleSetLanguage}
         stats={{
           savedWordsCount: savedWords.length,
           studentsCount: students.length,
@@ -254,6 +265,8 @@ function App() {
           <DirectorView
             students={students}
             savedWords={savedWords}
+            currentUser={currentUser}
+            language={language}
           />
         )}
 
@@ -264,6 +277,7 @@ function App() {
             onAddStudent={handleAddStudent}
             onDeleteStudent={handleDeleteStudent}
             currentUser={currentUser}
+            language={language}
           />
         )}
 
@@ -276,6 +290,7 @@ function App() {
             savedWords={savedWords}
             onSaveWord={handleSaveWord}
             onDeleteSavedWord={handleDeleteSavedWord}
+            language={language}
           />
         )}
 
@@ -288,6 +303,15 @@ function App() {
                 savedWords={savedWords}
                 onNavigateTab={setActiveTab}
                 onConsultAgentWithStudent={handleConsultAgentWithStudent}
+                language={language}
+              />
+            )}
+
+            {activeTab === 'messages' && (
+              <MessagesView
+                currentUser={currentUser}
+                students={students}
+                language={language}
               />
             )}
 
@@ -297,6 +321,7 @@ function App() {
                 onSaveWord={handleSaveWord}
                 onDeleteSavedWord={handleDeleteSavedWord}
                 onConsultAgentWithWord={handleConsultAgentWithWord}
+                language={language}
               />
             )}
 
@@ -304,6 +329,7 @@ function App() {
               <TimerAndTodoView
                 todos={todos}
                 onUpdateTodos={updateTodosState}
+                language={language}
               />
             )}
 
@@ -315,6 +341,7 @@ function App() {
                 onNavigateToGrading={handleNavigateToGrading}
                 onNavigateToAttendance={handleNavigateToAttendance}
                 onConsultAgentWithStudent={handleConsultAgentWithStudent}
+                language={language}
               />
             )}
 
@@ -323,6 +350,7 @@ function App() {
                 students={students}
                 onUpdateAttendance={handleUpdateAttendance}
                 onMarkAllPresent={handleMarkAllPresent}
+                language={language}
               />
             )}
 
@@ -332,6 +360,7 @@ function App() {
                 onAddGrade={handleAddGrade}
                 onDeleteGrade={handleDeleteGrade}
                 initialSelectedStudentId={presetStudentForGrading}
+                language={language}
               />
             )}
 
@@ -343,6 +372,7 @@ function App() {
                 onSaveChats={updateAgentChatsState}
                 presetWord={presetWordForAgent}
                 presetStudent={presetStudentForAgent}
+                language={language}
               />
             )}
           </>

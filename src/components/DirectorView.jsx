@@ -17,9 +17,10 @@ import {
   IconBriefcase
 } from './Icons';
 import { DIRECTOR_DATA } from '../data/mockData';
+import { MessagesView } from './MessagesView';
 
-export const DirectorView = ({ students = [], savedWords = [] }) => {
-  const [activeSubTab, setActiveSubTab] = useState('overview'); // overview, teachers, groups, ai-advisor, reports
+export const DirectorView = ({ students = [], savedWords = [], currentUser, language = 'uz' }) => {
+  const [activeSubTab, setActiveSubTab] = useState('overview'); // overview, teachers, groups, ai-advisor, reports, sms
   const [selectedMonth, setSelectedMonth] = useState('Avgust');
   const [aiChatMessages, setAiChatMessages] = useState([
     {
@@ -172,6 +173,15 @@ export const DirectorView = ({ students = [], savedWords = [] }) => {
         >
           <IconAward size={18} />
           <span>Rasmiy Hisobotlar</span>
+        </button>
+
+        <button
+          type="button"
+          className={`director-nav-btn ${activeSubTab === 'sms' ? 'active-nav-btn' : ''}`}
+          onClick={() => setActiveSubTab('sms')}
+        >
+          <IconSend size={18} />
+          <span>SMS & Xabarnomalar</span>
         </button>
       </div>
 
@@ -787,6 +797,17 @@ export const DirectorView = ({ students = [], savedWords = [] }) => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* SUB-TAB 6: SMS & REAL-TIME BROADCAST CENTER */}
+      {activeSubTab === 'sms' && (
+        <div className="director-tab-content animate-fade-in">
+          <MessagesView
+            currentUser={currentUser || { id: 'usr-director', username: 'director', name: 'Dr. Rustam Karimov', role: 'director', roleLabel: 'Direktor (Headmaster)', avatar: '🏛️' }}
+            students={students}
+            language={language}
+          />
         </div>
       )}
     </div>
