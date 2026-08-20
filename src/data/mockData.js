@@ -959,3 +959,42 @@ export const STUDENT_PORTAL_DATA = {
     }
   ]
 };
+
+export const INITIAL_TODOS = [
+  {
+    id: 'td-1',
+    text: "IELTS Writing Task 2 mavzularini ko'rib chiqish va insho tayyorlash",
+    category: 'Dars',
+    priority: 'high',
+    completed: false,
+    createdAt: '2026-08-20',
+    timeEst: '45 daqiqa'
+  },
+  {
+    id: 'td-2',
+    text: "20 ta yangi akademik so'zni Flashcard orqali takrorlash",
+    category: "Lug'at",
+    priority: 'medium',
+    completed: true,
+    createdAt: '2026-08-20',
+    timeEst: '20 daqiqa'
+  },
+  {
+    id: 'td-3',
+    text: 'Speaking Club savollarini AI Agent yordamida generatsiya qilish',
+    category: 'AI Agent',
+    priority: 'medium',
+    completed: false,
+    createdAt: '2026-08-20',
+    timeEst: '15 daqiqa'
+  },
+  {
+    id: 'td-4',
+    text: "Barcha guruhlar bo'yicha kunlik davomatni to'liq belgilash",
+    category: 'Davomat',
+    priority: 'high',
+    completed: false,
+    createdAt: '2026-08-20',
+    timeEst: '10 daqiqa'
+  }
+];

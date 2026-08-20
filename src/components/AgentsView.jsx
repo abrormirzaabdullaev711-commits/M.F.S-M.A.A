@@ -47,22 +47,6 @@ export const AgentsView = ({
     setMessages(history);
   }, [selectedAgentId]);
 
-  // Handle Preset Word or Student incoming from other tabs
-  useEffect(() => {
-    if (presetWord) {
-      setSelectedAgentId('tutor-agent');
-      handleSendPrompt(`Menga "${presetWord.word}" so'zining ma'nosi, grammatikasi va jonli gaplarda qo'llanilishini chuqur tushuntirib ber.`, { activeWord: presetWord });
-    } else if (presetStudent) {
-      setSelectedAgentId('evaluation-agent');
-      handleSendPrompt(`O'quvchi "${presetStudent.name}"ning (${presetStudent.group}) davomati (${Object.values(presetStudent.attendance || {}).filter(s => s==='present').length} kun bor) va baholarini individual tahlil qilib ber.`);
-    }
-  }, [presetWord, presetStudent]);
-
-  // Scroll to bottom when messages update
-  useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isGenerating]);
-
   const handleSendPrompt = async (textToSend = inputPrompt, customContext = {}) => {
     const query = textToSend.trim();
     if (!query || isGenerating) return;
@@ -117,6 +101,17 @@ export const AgentsView = ({
       setIsGenerating(false);
     }
   };
+
+  // Handle Preset Word or Student incoming from other tabs
+  useEffect(() => {
+    if (presetWord) {
+      setSelectedAgentId('tutor-agent');
+      handleSendPrompt(`Menga "${presetWord.word}" so'zining ma'nosi, grammatikasi va jonli gaplarda qo'llanilishini chuqur tushuntirib ber.`, { activeWord: presetWord });
+    } else if (presetStudent) {
+      setSelectedAgentId('evaluation-agent');
+      handleSendPrompt(`O'quvchi "${presetStudent.name}"ning (${presetStudent.group}) davomati (${Object.values(presetStudent.attendance || {}).filter(s => s==='present').length} kun bor) va baholarini individual tahlil qilib ber.`);
+    }
+  }, [presetWord, presetStudent]);
 
   const handleQuizOptionClick = (questionId, optionIdx) => {
     setSelectedQuizAnswers(prev => ({

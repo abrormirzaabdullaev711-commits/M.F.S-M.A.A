@@ -24,6 +24,7 @@ import {
   getStoredAdminLogs, 
   saveStoredAdminLogs,
   getStoredUsers,
+  saveStoredUsers,
   updateUserRoleInStorage,
   deleteStoredUser,
   registerNewUser
