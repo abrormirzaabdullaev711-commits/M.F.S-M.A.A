@@ -19,7 +19,9 @@ import {
   IconCheckCircle,
   IconBell,
   IconGlobe,
-  IconSend
+  IconSend,
+  IconMenu,
+  IconX
 } from './Icons';
 import { 
   getStoredUsers, 
@@ -48,6 +50,7 @@ export const Navbar = ({
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Edit Profile States
   const [editName, setEditName] = useState(currentUser?.name || '');
@@ -458,9 +461,146 @@ export const Navbar = ({
                 </div>
               )}
             </div>
+
+            {/* 4. Mobile Menu Hamburger Toggle Button */}
+            <button
+              type="button"
+              className="mobile-menu-toggle-btn animate-btn-pop"
+              onClick={() => {
+                setMobileMenuOpen(!mobileMenuOpen);
+                setShowRoleDropdown(false);
+                setShowNotifDropdown(false);
+                setShowLangDropdown(false);
+              }}
+              title="Menyu"
+              aria-label="Menyu"
+            >
+              {mobileMenuOpen ? <IconX size={20} /> : <IconMenu size={20} />}
+            </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Swipeable Quick Navigation Bar for Teacher */}
+      {userRole === 'teacher' && (
+        <div className="mobile-quick-nav-bar">
+          {teacherTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                className={`mobile-quick-tab-btn ${isActive ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <Icon size={16} />
+                <span>{tab.label}</span>
+                {tab.badge && (
+                  <span className={`mobile-quick-badge ${isActive ? 'active' : ''}`}>
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div className="mobile-nav-drawer-backdrop animate-fade-in" onClick={() => setMobileMenuOpen(false)}>
+          <div className="mobile-nav-drawer animate-slide-left" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-nav-drawer-header">
+              <div className="flex items-center gap-3">
+                <span className="mobile-nav-avatar">{currentUser?.avatar || '👤'}</span>
+                <div>
+                  <strong className="mobile-nav-username">{currentUser?.name}</strong>
+                  <div className="text-xs text-blue-700 font-mono">
+                    ID: {(currentUser?.studentId || currentUser?.id || '').toUpperCase()} • {currentRoleInfo.label}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <IconX size={20} />
+              </button>
+            </div>
+
+            <div className="mobile-nav-drawer-body">
+              {userRole !== 'teacher' && (
+                <div className={`mobile-role-badge-box role-nav-indicator ${currentRoleInfo.color}`}>
+                  <currentRoleInfo.icon size={18} />
+                  <span>{currentRoleInfo.label} Faol Rejimi</span>
+                </div>
+              )}
+
+              {userRole === 'teacher' && (
+                <div className="mobile-nav-items-list">
+                  <div className="mobile-nav-section-title">{t('tabDashboard')} & Bo'limlar:</div>
+                  {teacherTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        className={`mobile-drawer-tab-btn ${isActive ? 'active' : ''}`}
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon size={18} className="nav-icon" />
+                          <span className="mobile-tab-label">{tab.label}</span>
+                        </div>
+                        {tab.badge && (
+                          <span className={`nav-badge ${isActive ? 'active-badge' : ''}`}>
+                            {tab.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="mobile-drawer-divider"></div>
+
+              {/* Quick Actions in Mobile Drawer */}
+              <div className="mobile-drawer-actions">
+                <button
+                  type="button"
+                  className="radial-button-secondary mobile-drawer-action-btn"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleOpenEditProfile();
+                  }}
+                >
+                  <IconEdit size={16} />
+                  <span>{t('btnEditProfile')}</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="dropdown-logout-btn mobile-drawer-logout-btn"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onLogout();
+                  }}
+                >
+                  <IconLogOut size={16} />
+                  <span>{t('btnLogout')}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* =========================================================
           PROFILE EDIT MODAL (Ism Almashtirish & Profilni Yangilash)

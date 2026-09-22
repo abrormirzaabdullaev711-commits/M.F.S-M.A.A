@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SUPPORTED_LANGUAGES } from '../data/mockData';
-import { lookupWord, speakText } from '../services/dictionaryService';
+import { lookupWord, speakText, playAudio } from '../services/dictionaryService';
 import { 
   IconSearch, 
   IconVolume, 
@@ -11,7 +11,8 @@ import {
   IconTrash, 
   IconRefresh, 
   IconCheck,
-  IconGlobe
+  IconGlobe,
+  IconExternalLink
 } from './Icons';
 
 export const DictionaryView = ({ 
@@ -149,7 +150,7 @@ export const DictionaryView = ({
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={currentLangObj.placeholder || "So'zni yozing..."}
+                    placeholder={selectedLanguage === 'en' ? "Cambridge Dictionary'dan so'z qidirish (masalan: resilient, diligent)..." : (currentLangObj.placeholder || "So'zni yozing...")}
                     className="search-main-input"
                   />
                   {searchQuery && (
@@ -195,7 +196,7 @@ export const DictionaryView = ({
             {isLoading ? (
               <div className="loading-card">
                 <IconRefresh size={36} className="spin-icon text-accent" />
-                <p>So'z ma'nosi va tarjimalari yuklanmoqda...</p>
+                <p>Cambridge Dictionary va lug'at bazasidan qidirilmoqda...</p>
               </div>
             ) : activeResult ? (
               <div className="word-detail-card">
@@ -207,13 +208,54 @@ export const DictionaryView = ({
                       <span className="word-lang-badge">
                         {currentLangObj.flag} {activeResult.language.toUpperCase()}
                       </span>
+                      {activeResult.cefrLevel && (
+                        <span className="word-cefr-badge" title="Cambridge CEFR Bilim Darajasi">
+                          CEFR {activeResult.cefrLevel}
+                        </span>
+                      )}
                       {activeResult.partOfSpeech && (
                         <span className="word-pos-tag">{activeResult.partOfSpeech}</span>
                       )}
+                      {(activeResult.isCambridge || activeResult.source?.includes('Cambridge')) && (
+                        <span className="word-cambridge-badge" title="Cambridge Academic Dictionary ma'lumotlar bazasi">
+                          🎓 Cambridge Dictionary
+                        </span>
+                      )}
                     </div>
-                    {activeResult.phonetic && (
-                      <div className="word-phonetic-row">
+
+                    <div className="word-phonetic-row">
+                      {activeResult.phonetic && (
                         <span className="phonetic-text">{activeResult.phonetic}</span>
+                      )}
+
+                      {/* UK Audio */}
+                      {activeResult.ukAudio ? (
+                        <button
+                          type="button"
+                          className="audio-play-btn audio-uk-pill"
+                          onClick={() => playAudio(activeResult.ukAudio, activeResult.word, 'en')}
+                          title="British English talaffuzi (Cambridge UK)"
+                        >
+                          <IconVolume size={16} />
+                          <span>🇬🇧 UK</span>
+                        </button>
+                      ) : null}
+
+                      {/* US Audio */}
+                      {activeResult.usAudio ? (
+                        <button
+                          type="button"
+                          className="audio-play-btn audio-us-pill"
+                          onClick={() => playAudio(activeResult.usAudio, activeResult.word, 'en')}
+                          title="American English talaffuzi (Cambridge US)"
+                        >
+                          <IconVolume size={16} />
+                          <span>🇺🇸 US</span>
+                        </button>
+                      ) : null}
+
+                      {/* Fallback Speech synthesis button */}
+                      {!activeResult.ukAudio && !activeResult.usAudio && (
                         <button
                           type="button"
                           className="audio-play-btn"
@@ -221,13 +263,25 @@ export const DictionaryView = ({
                           title="Baland ovozda talaffuz qilish"
                         >
                           <IconVolume size={18} />
-                          <span>Talaffuzni eshitish</span>
+                          <span>Talaffuz</span>
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
 
                   <div className="word-card-actions">
+                    {activeResult.cambridgeUrl && (
+                      <a
+                        href={activeResult.cambridgeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-cambridge-external"
+                        title="Cambridge Dictionary rasmiy veb-saytida to'liq ko'rish"
+                      >
+                        <IconExternalLink size={16} />
+                        <span>Cambridge'da ochish</span>
+                      </a>
+                    )}
                     <button
                       type="button"
                       className={`btn-save-vocab ${isWordAlreadySaved ? 'saved' : ''}`}
