@@ -4377,6 +4377,55 @@ select option,
   z-index: 10;
 }
 
+[data-theme='dark'] .login-page-container {
+  background: radial-gradient(circle at top center, #0f172a 0%, #090d16 60%, #030712 100%);
+}
+
+[data-theme='dark'] .login-card-wrapper {
+  background: #0f172a;
+  border-color: #1e293b;
+  box-shadow: 0 20px 48px -8px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme='dark'] .login-title {
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .login-subtitle {
+  color: #93c5fd;
+}
+
+[data-theme='dark'] .login-pill-badge {
+  background: #1e293b;
+  border-color: #334155;
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .role-selector-label {
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .role-select-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+[data-theme='dark'] .role-select-btn:hover {
+  background: #334155;
+}
+
+[data-theme='dark'] .login-input,
+[data-theme='dark'] .login-select {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+[data-theme='dark'] .login-top-bar {
+  border-color: #334155;
+}
+
 .login-header {
   text-align: center;
   margin-bottom: 24px;
@@ -8036,6 +8085,10 @@ h1, h2, h3, h4, h5, h6 {
   gap: 20px;
 }
 
+.nav-actions{
+  display: flex;
+}
+
 .messages-header-card {
   background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
   color: #ffffff;
@@ -9156,6 +9209,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .nav-actions {
+    
     gap: 4px !important;
   }
 

@@ -154,7 +154,7 @@ export const Navbar = ({
             </div>
             <div className="brand-text">
               <div className="brand-title">
-                EduLingua <span className="brand-highlight">AI Platform</span>
+                EduLingua 
               </div>
               <div className="brand-subtitle">
                 {t('brandSubtitle')}
@@ -275,6 +275,21 @@ export const Navbar = ({
                 </div>
               )}
             </div>
+
+            {/* 2. Theme Toggle (Dark / Light Mode) */}
+            <button
+              type="button"
+              className="theme-toggle-btn animate-btn-pop"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              title={theme === 'dark' ? t('lightMode') : t('darkMode')}
+              aria-label={t('themeToggle')}
+            >
+              {theme === 'dark' ? (
+                <IconSun size={19} className="text-amber" />
+              ) : (
+                <IconMoon size={19} className="text-blue" />
+              )}
+            </button>
 
             {/* 2. Notification Bell (Bildirishnomalar & SMS) */}
             <div className="nav-notif-menu-wrap">
@@ -573,6 +588,41 @@ export const Navbar = ({
 
               {/* Quick Actions in Mobile Drawer */}
               <div className="mobile-drawer-actions">
+                <div className="flex items-center gap-2 mb-2 w-full">
+                  <button
+                    type="button"
+                    className="theme-toggle-btn animate-btn-pop flex-1 flex items-center justify-center gap-2 h-10 rounded-xl"
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  >
+                    {theme === 'dark' ? <IconSun size={18} className="text-amber" /> : <IconMoon size={18} className="text-blue" />}
+                    <span className="text-xs font-bold">{theme === 'dark' ? t('lightMode') : t('darkMode')}</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between gap-1 mb-3 w-full bg-blue-50/50 p-1.5 rounded-xl border border-blue-100">
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${language === 'uz' ? 'bg-white shadow text-blue-700' : 'text-slate-600'}`}
+                    onClick={() => setLanguage('uz')}
+                  >
+                    🇺🇿 UZ
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${language === 'ru' ? 'bg-white shadow text-blue-700' : 'text-slate-600'}`}
+                    onClick={() => setLanguage('ru')}
+                  >
+                    🇷🇺 RU
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${language === 'en' ? 'bg-white shadow text-blue-700' : 'text-slate-600'}`}
+                    onClick={() => setLanguage('en')}
+                  >
+                    🇬🇧 EN
+                  </button>
+                </div>
+
                 <button
                   type="button"
                   className="radial-button-secondary mobile-drawer-action-btn"

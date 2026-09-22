@@ -362,14 +362,18 @@ export const saveSavedWords = (words) => {
   }
 };
 
-// 4. Theme (Light Mode by default)
+// 4. Theme (Light Mode by default, persistent)
 export const getTheme = () => {
-  return 'light';
+  try {
+    return localStorage.getItem(KEYS.THEME) || 'light';
+  } catch (e) {
+    return 'light';
+  }
 };
 
-export const saveTheme = () => {
+export const saveTheme = (theme) => {
   try {
-    localStorage.setItem(KEYS.THEME, 'light');
+    localStorage.setItem(KEYS.THEME, theme || 'light');
   } catch (e) {
     console.error('Failed to save theme:', e);
   }

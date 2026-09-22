@@ -7,20 +7,22 @@ export function parseCambridgeHtml(html, requestedWord = '') {
 
   // Check if Cambridge returned "Search suggestions" or no definitions found
   if (html.includes('did-you-mean') || html.includes('No exact match found')) {
-    const hasDefs = html.includes('class="def ddef_d db"');
+    const hasDefs = html.includes('ddef_d');
     if (!hasDefs) {
       return null;
     }
   }
 
   // 1. Headword
-  const wordMatch = html.match(/<span class="hw dhw"[^>]*>([\s\S]*?)<\/span>/i);
+  const wordMatch = html.match(/<span[^>]*class="[^"]*hw\s+dhw[^"]*"[^>]*>([\s\S]*?)<\/span>/i) ||
+                    html.match(/<span class="hw dhw"[^>]*>([\s\S]*?)<\/span>/i);
   const headword = wordMatch 
     ? wordMatch[1].replace(/<[^>]+>/g, '').trim() 
     : requestedWord.trim();
 
   // 2. Part of Speech
-  const posMatch = html.match(/<span class="pos dpos"[^>]*>([\s\S]*?)<\/span>/i);
+  const posMatch = html.match(/<span[^>]*class="[^"]*pos\s+dpos[^"]*"[^>]*>([\s\S]*?)<\/span>/i) ||
+                   html.match(/<span class="pos dpos"[^>]*>([\s\S]*?)<\/span>/i);
   const partOfSpeech = posMatch 
     ? posMatch[1].replace(/<[^>]+>/g, '').trim() 
     : 'word';
@@ -33,19 +35,23 @@ export function parseCambridgeHtml(html, requestedWord = '') {
 
   // 4. Phonetics & Audio
   // UK
-  const ukMatch = html.match(/class="uk dpron-i[\s\S]*?<span class="pron dpron">\/([\s\S]*?)\/<\/span>/i);
+  const ukMatch = html.match(/class="uk dpron-i[\s\S]*?<span class="pron dpron">\/([\s\S]*?)\/<\/span>/i) ||
+                  html.match(/class="[^"]*uk[^"]*"[\s\S]*?<span class="pron dpron">\/([\s\S]*?)\/<\/span>/i);
   const ukIpa = ukMatch ? '/' + ukMatch[1].replace(/<[^>]+>/g, '').trim() + '/' : '';
 
-  const ukAudioMatch = html.match(/class="uk dpron-i[\s\S]*?<source type="audio\/mpeg" src="([^"]+)"/i);
+  const ukAudioMatch = html.match(/class="uk dpron-i[\s\S]*?<source type="audio\/mpeg" src="([^"]+)"/i) ||
+                       html.match(/class="[^"]*uk[^"]*"[\s\S]*?<source type="audio\/mpeg" src="([^"]+)"/i);
   const ukAudio = ukAudioMatch && ukAudioMatch[1]
     ? (ukAudioMatch[1].startsWith('http') ? ukAudioMatch[1] : `https://dictionary.cambridge.org${ukAudioMatch[1]}`)
     : '';
 
   // US
-  const usMatch = html.match(/class="us dpron-i[\s\S]*?<span class="pron dpron">\/([\s\S]*?)\/<\/span>/i);
+  const usMatch = html.match(/class="us dpron-i[\s\S]*?<span class="pron dpron">\/([\s\S]*?)\/<\/span>/i) ||
+                  html.match(/class="[^"]*us[^"]*"[\s\S]*?<span class="pron dpron">\/([\s\S]*?)\/<\/span>/i);
   const usIpa = usMatch ? '/' + usMatch[1].replace(/<[^>]+>/g, '').trim() + '/' : '';
 
-  const usAudioMatch = html.match(/class="us dpron-i[\s\S]*?<source type="audio\/mpeg" src="([^"]+)"/i);
+  const usAudioMatch = html.match(/class="us dpron-i[\s\S]*?<source type="audio\/mpeg" src="([^"]+)"/i) ||
+                       html.match(/class="[^"]*us[^"]*"[\s\S]*?<source type="audio\/mpeg" src="([^"]+)"/i);
   const usAudio = usAudioMatch && usAudioMatch[1]
     ? (usAudioMatch[1].startsWith('http') ? usAudioMatch[1] : `https://dictionary.cambridge.org${usAudioMatch[1]}`)
     : '';
@@ -61,7 +67,7 @@ export function parseCambridgeHtml(html, requestedWord = '') {
   }
 
   // 5. Definitions
-  const defMatches = [...html.matchAll(/<div class="def ddef_d db">([\s\S]*?)<\/div>/gi)];
+  const defMatches = [...html.matchAll(/<div[^>]*class="[^"]*ddef_d[^"]*"[^>]*>([\s\S]*?)<\/div>/gi)];
   const definitions = defMatches
     .map(m => m[1].replace(/<[^>]+>/g, '').replace(/[\r\n\t]+/g, ' ').trim())
     .filter(Boolean);
@@ -69,7 +75,7 @@ export function parseCambridgeHtml(html, requestedWord = '') {
   const primaryMeaning = definitions[0] || '';
 
   // 6. Examples
-  const exMatches = [...html.matchAll(/<span class="eg deg">([\s\S]*?)<\/span>/gi)];
+  const exMatches = [...html.matchAll(/<span[^>]*class="[^"]*deg[^"]*"[^>]*>([\s\S]*?)<\/span>/gi)];
   const examples = exMatches
     .map(m => ({
       text: m[1].replace(/<[^>]+>/g, '').replace(/[\r\n\t]+/g, ' ').trim(),
@@ -79,7 +85,10 @@ export function parseCambridgeHtml(html, requestedWord = '') {
     .slice(0, 4);
 
   // 7. Synonyms & Related Words
-  const synMatches = [...html.matchAll(/<span class="item">([\s\S]*?)<\/span>/gi)];
+  const synMatches = [
+    ...html.matchAll(/<span class="item">([\s\S]*?)<\/span>/gi),
+    ...html.matchAll(/<span[^>]*class="[^"]*synonym[^"]*"[^>]*>([\s\S]*?)<\/span>/gi)
+  ];
   const synonyms = [...new Set(
     synMatches
       .map(m => m[1].replace(/<[^>]+>/g, '').trim())
@@ -87,7 +96,7 @@ export function parseCambridgeHtml(html, requestedWord = '') {
   )].slice(0, 6);
 
   const cleanWord = headword || requestedWord;
-  const cambridgeUrl = `https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(cleanWord.toLowerCase())}`;
+  const cambridgeUrl = `https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(cleanWord.toLowerCase().replace(/\s+/g, '-'))}`;
 
   if (!primaryMeaning && definitions.length === 0) {
     return null;
@@ -104,10 +113,12 @@ export function parseCambridgeHtml(html, requestedWord = '') {
     usAudio,
     cefrLevel,
     meaning: primaryMeaning,
-    definitions: definitions.slice(0, 3),
+    definition: primaryMeaning,
+    definitions: definitions.slice(0, 4),
     examples: examples.length > 0 ? examples : [
       { text: `The word "${cleanWord}" is officially documented in Cambridge Academic Dictionary.`, translation: '' }
     ],
+    example: examples[0]?.text || `The word "${cleanWord}" is officially documented in Cambridge Academic Dictionary.`,
     synonyms,
     cambridgeUrl,
     source: 'Cambridge Academic Dictionary',

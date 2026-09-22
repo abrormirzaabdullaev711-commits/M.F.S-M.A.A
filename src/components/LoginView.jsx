@@ -10,12 +10,23 @@ import {
   IconLock,
   IconArrowRight,
   IconPlus,
-  IconCheckCircle
+  IconCheckCircle,
+  IconSun,
+  IconMoon,
+  IconGlobe
 } from './Icons';
 import { getStoredUsers, registerNewStudent } from '../services/storage';
 import { GROUPS_LIST } from '../data/mockData';
+import { getTranslation } from '../services/translations';
 
-export const LoginView = ({ onLoginSuccess }) => {
+export const LoginView = ({ 
+  onLoginSuccess,
+  theme = 'light',
+  setTheme = () => {},
+  language = 'uz',
+  setLanguage = () => {}
+}) => {
+  const t = (k) => getTranslation(k, language);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
   const [selectedRole, setSelectedRole] = useState('student'); // 'student', 'teacher', 'director', 'admin', 'superadmin'
   
@@ -232,6 +243,47 @@ export const LoginView = ({ onLoginSuccess }) => {
   return (
     <div className="login-page-container">
       <div className="login-card-wrapper animate-pop-in">
+        {/* Top Controls: Language & Theme */}
+        <div className="login-top-bar flex items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-100/60">
+          <div className="flex items-center gap-1.5 bg-blue-50/70 p-1 rounded-xl border border-blue-100">
+            <button
+              type="button"
+              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${language === 'uz' ? 'bg-white shadow text-blue-800' : 'text-slate-600 hover:text-blue-600'}`}
+              onClick={() => setLanguage('uz')}
+            >
+              🇺🇿 UZ
+            </button>
+            <button
+              type="button"
+              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${language === 'ru' ? 'bg-white shadow text-blue-800' : 'text-slate-600 hover:text-blue-600'}`}
+              onClick={() => setLanguage('ru')}
+            >
+              🇷🇺 RU
+            </button>
+            <button
+              type="button"
+              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${language === 'en' ? 'bg-white shadow text-blue-800' : 'text-slate-600 hover:text-blue-600'}`}
+              onClick={() => setLanguage('en')}
+            >
+              🇬🇧 EN
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className="theme-toggle-btn animate-btn-pop"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title={theme === 'dark' ? t('lightMode') : t('darkMode')}
+            aria-label="Toggle Theme"
+          >
+            {theme === 'dark' ? (
+              <IconSun size={18} className="text-amber" />
+            ) : (
+              <IconMoon size={18} className="text-blue" />
+            )}
+          </button>
+        </div>
+
         {/* Brand Header */}
         <div className="login-header">
           <div className="login-logo-badge">
@@ -239,7 +291,7 @@ export const LoginView = ({ onLoginSuccess }) => {
           </div>
           <h1 className="login-title">EduLingua AI Platform</h1>
           <p className="login-subtitle">
-            O'quv Markaz Boshqaruv & Imtihon Ekotizimi
+            {t('brandSubtitle')}
           </p>
 
           {/* Mode Switcher Tabs: Login vs Register */}

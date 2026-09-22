@@ -231,7 +231,15 @@ function App() {
 
   // IF NOT LOGGED IN -> RENDER LOGIN VIEW
   if (!currentUser) {
-    return <LoginView onLoginSuccess={handleLoginSuccess} />;
+    return (
+      <LoginView
+        onLoginSuccess={handleLoginSuccess}
+        theme={theme}
+        setTheme={setTheme}
+        language={language}
+        setLanguage={handleSetLanguage}
+      />
+    );
   }
 
   const role = currentUser.role || 'teacher';

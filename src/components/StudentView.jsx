@@ -27,7 +27,7 @@ import {
   INITIAL_STUDENTS,
   SUPPORTED_LANGUAGES 
 } from '../data/mockData';
-import { lookupWord, speakText } from '../services/dictionaryService';
+import { lookupWord, speakText, playAudio } from '../services/dictionaryService';
 import { 
   getStoredStudentTasks, 
   saveStoredStudentTasks,
@@ -276,8 +276,12 @@ export const StudentView = ({
     return `${mins.toString().padStart(2, '0')}:${remainderSecs.toString().padStart(2, '0')}`;
   };
 
-  const handlePronounce = (text, lang = 'en-US') => {
-    speakText(text, lang);
+  const handlePronounce = (text, lang = 'en', audioUrl = '') => {
+    if (audioUrl) {
+      playAudio(audioUrl, text, lang);
+    } else {
+      speakText(text, lang);
+    }
   };
 
   const handleToggleTask = (taskId) => {
@@ -603,7 +607,7 @@ export const StudentView = ({
                   <button
                     type="button"
                     className="audio-btn-circle"
-                    onClick={() => handlePronounce(dictResult.word, dictResult.language)}
+                    onClick={() => handlePronounce(dictResult.word, dictResult.language, dictResult.ukAudio || dictResult.usAudio)}
                     title="Audio talaffuzni tinglash"
                   >
                     <IconVolume size={18} />
@@ -624,17 +628,17 @@ export const StudentView = ({
               <div className="result-body-grid">
                 <div className="result-definition-box">
                   <div className="box-subheading">O'zbekcha Tarjimasi & Ma'nosi:</div>
-                  <div className="translation-highlight">{dictResult.translation}</div>
-                  <p className="definition-text">{dictResult.definition}</p>
+                  <div className="translation-highlight">{dictResult.translation || dictResult.meaningUz}</div>
+                  <p className="definition-text">{dictResult.definition || dictResult.meaning}</p>
                 </div>
 
-                {dictResult.mnemonic && (
+                {(dictResult.mnemonic || dictResult.mnemonicTip) && (
                   <div className="result-mnemonic-box">
                     <div className="box-subheading">
                       <IconSparkles size={16} className="text-yellow" />
                       <span>AI Mnemonika (Xotirada Qolish Usuli):</span>
                     </div>
-                    <p className="mnemonic-text">{dictResult.mnemonic}</p>
+                    <p className="mnemonic-text">{dictResult.mnemonic || dictResult.mnemonicTip}</p>
                   </div>
                 )}
               </div>
@@ -642,7 +646,12 @@ export const StudentView = ({
               {/* Examples & Synonyms */}
               <div className="result-examples-box mt-3">
                 <div className="box-subheading">Namunaviy Gap (Kontekst):</div>
-                <blockquote className="example-quote">"{dictResult.example}"</blockquote>
+                <blockquote className="example-quote">
+                  "{dictResult.example || dictResult.examples?.[0]?.text || dictResult.examples?.[0] || 'Ushbu so\'z kontekstda muhim ahamiyatga ega.'}"
+                </blockquote>
+                {dictResult.examples?.[0]?.translation && (
+                  <p className="text-xs text-blue-600 mt-1">↳ {dictResult.examples[0].translation}</p>
+                )}
               </div>
 
               {dictResult.synonyms && dictResult.synonyms.length > 0 && (
@@ -675,12 +684,12 @@ export const StudentView = ({
                     <button
                       type="button"
                       className="saved-word-audio"
-                      onClick={() => handlePronounce(item.word, item.language)}
+                      onClick={() => handlePronounce(item.word, item.language, item.ukAudio || item.usAudio)}
                     >
                       <IconVolume size={14} />
                     </button>
                   </div>
-                  <div className="saved-word-trans">{item.translation}</div>
+                  <div className="saved-word-trans">{item.translation || item.meaningUz || item.meaning}</div>
                   <button
                     type="button"
                     className="delete-saved-word-btn"

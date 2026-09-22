@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { SUPPORTED_LANGUAGES } from '../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { SUPPORTED_LANGUAGES, INITIAL_DICTIONARY_ENTRIES } from '../data/mockData';
 import { lookupWord, speakText, playAudio } from '../services/dictionaryService';
 import { 
   IconSearch, 
@@ -14,13 +14,17 @@ import {
   IconGlobe,
   IconExternalLink
 } from './Icons';
+import { getTranslation } from '../services/translations';
 
 export const DictionaryView = ({ 
-  savedWords, 
-  onSaveWord, 
-  onDeleteSavedWord, 
-  onConsultAgentWithWord 
+  savedWords = [], 
+  onSaveWord = () => {}, 
+  onDeleteSavedWord = () => {}, 
+  onConsultAgentWithWord = () => {},
+  language = 'uz'
 }) => {
+  const t = (k) => getTranslation(k, language);
+
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [searchQuery, setSearchQuery] = useState('resilient');
   const [activeResult, setActiveResult] = useState(null);
@@ -33,7 +37,7 @@ export const DictionaryView = ({
   // Sample quick chip words for fast testing
   const sampleSuggestions = {
     en: ['resilient', 'serendipity', 'diligent', 'eloquent', 'ubiquitous'],
-    uz: ['sabot', 'maftunkor', 'muvaffaqiyat', 'tirishqoqlik', 'farosat'],
+    uz: ['sabot', 'kitob', 'maftunkor', 'muvaffaqiyat', 'farosat'],
     ru: ['вдохновение', 'упорство', 'достижение', 'искренность'],
     de: ['Ausdauer', 'Sehnsucht', 'Erfolg', 'Leidenschaft'],
     tr: ['azim', 'ilham', 'başarı', 'samimiyet'],
@@ -41,7 +45,7 @@ export const DictionaryView = ({
   };
 
   const handleSearch = async (wordToSearch = searchQuery, langCode = selectedLanguage) => {
-    const term = wordToSearch.trim();
+    const term = (wordToSearch || '').trim();
     if (!term) return;
 
     setIsLoading(true);
@@ -49,14 +53,14 @@ export const DictionaryView = ({
       const result = await lookupWord(term, langCode);
       setActiveResult(result);
     } catch (err) {
-      console.error(err);
+      console.error('Dictionary search error:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   // Perform initial search if activeResult is empty
-  React.useEffect(() => {
+  useEffect(() => {
     if (!activeResult) {
       handleSearch('resilient', 'en');
     }
@@ -73,7 +77,7 @@ export const DictionaryView = ({
   const handleSaveCurrentWord = () => {
     if (!activeResult) return;
     onSaveWord(activeResult);
-    setSaveSuccessMsg("So'z shaxsiy lug'atga muvaffaqiyatli saqlandi!");
+    setSaveSuccessMsg(t('dictWordSavedSuccess'));
     setTimeout(() => setSaveSuccessMsg(''), 3000);
   };
 
@@ -83,19 +87,19 @@ export const DictionaryView = ({
 
   const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage) || SUPPORTED_LANGUAGES[0];
 
+  // Active flashcard pool (Saved words or fallback to rich curated entries)
+  const flashcardPool = savedWords.length > 0 ? savedWords : INITIAL_DICTIONARY_ENTRIES;
+
   return (
     <div className="dictionary-view-wrapper">
       {/* Top Banner */}
       <div className="section-header-box">
         <div className="header-info">
           <div className="header-badge">
-            <IconGlobe size={16} /> Ko'p Tilli Aqlli Lug'at
+            <IconGlobe size={16} /> {t('dictHeaderBadge')}
           </div>
-          <h2>Tilni tanlang va so'z ma'nosini chuqur o'rganing</h2>
-          <p>
-            Istalgan tildagi so'zni yozing: uning xalqaro ma'nosi, o'zbekcha tarjimasi, 
-            fonetik talaffuzi, misollar, sinonimlar va AI xotira kalitlarini bir zumda bilib oling.
-          </p>
+          <h2>{t('dictHeaderTitle')}</h2>
+          <p>{t('dictHeaderSubtitle')}</p>
         </div>
         <div className="header-actions">
           <button 
@@ -108,14 +112,14 @@ export const DictionaryView = ({
             }}
           >
             <IconBook size={18} />
-            <span>{flashcardMode ? "Lug'atga Qaytish" : "Flashcard Mashg'uloti"}</span>
+            <span>{flashcardMode ? t('dictBackToDictionary') : t('dictFlashcardStudy')}</span>
           </button>
         </div>
       </div>
 
       {/* Language Selector Tabs */}
       <div className="language-selector-bar">
-        <span className="lang-bar-title">Qidiruv Tili:</span>
+        <span className="lang-bar-title">{t('dictSearchLanguage')}</span>
         <div className="language-pills-scroll">
           {SUPPORTED_LANGUAGES.map((lang) => (
             <button
@@ -150,7 +154,11 @@ export const DictionaryView = ({
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={selectedLanguage === 'en' ? "Cambridge Dictionary'dan so'z qidirish (masalan: resilient, diligent)..." : (currentLangObj.placeholder || "So'zni yozing...")}
+                    placeholder={
+                      selectedLanguage === 'en' 
+                        ? t('dictSearchPlaceholderEn') 
+                        : (currentLangObj.placeholder || t('dictSearchPlaceholder'))
+                    }
                     className="search-main-input"
                   />
                   {searchQuery && (
@@ -169,13 +177,13 @@ export const DictionaryView = ({
                   className="btn-primary search-submit-btn"
                 >
                   {isLoading ? <IconRefresh size={18} className="spin-icon" /> : <IconSearch size={18} />}
-                  <span>Qidirish</span>
+                  <span>{t('dictSearchBtn')}</span>
                 </button>
               </form>
 
               {/* Suggestions chips */}
               <div className="suggestions-row">
-                <span className="sug-label">Tavsiya so'zlar:</span>
+                <span className="sug-label">{t('dictSuggestedWords')}</span>
                 {(sampleSuggestions[selectedLanguage] || ['hello', 'learn', 'knowledge']).map((sug) => (
                   <button
                     key={sug}
@@ -196,7 +204,7 @@ export const DictionaryView = ({
             {isLoading ? (
               <div className="loading-card">
                 <IconRefresh size={36} className="spin-icon text-accent" />
-                <p>Cambridge Dictionary va lug'at bazasidan qidirilmoqda...</p>
+                <p>{t('dictLoading')}</p>
               </div>
             ) : activeResult ? (
               <div className="word-detail-card">
@@ -209,7 +217,7 @@ export const DictionaryView = ({
                         {currentLangObj.flag} {activeResult.language.toUpperCase()}
                       </span>
                       {activeResult.cefrLevel && (
-                        <span className="word-cefr-badge" title="Cambridge CEFR Bilim Darajasi">
+                        <span className="word-cefr-badge" title="CEFR Bilim Darajasi">
                           CEFR {activeResult.cefrLevel}
                         </span>
                       )}
@@ -234,7 +242,7 @@ export const DictionaryView = ({
                           type="button"
                           className="audio-play-btn audio-uk-pill"
                           onClick={() => playAudio(activeResult.ukAudio, activeResult.word, 'en')}
-                          title="British English talaffuzi (Cambridge UK)"
+                          title="British English (UK)"
                         >
                           <IconVolume size={16} />
                           <span>🇬🇧 UK</span>
@@ -247,7 +255,7 @@ export const DictionaryView = ({
                           type="button"
                           className="audio-play-btn audio-us-pill"
                           onClick={() => playAudio(activeResult.usAudio, activeResult.word, 'en')}
-                          title="American English talaffuzi (Cambridge US)"
+                          title="American English (US)"
                         >
                           <IconVolume size={16} />
                           <span>🇺🇸 US</span>
@@ -255,17 +263,15 @@ export const DictionaryView = ({
                       ) : null}
 
                       {/* Fallback Speech synthesis button */}
-                      {!activeResult.ukAudio && !activeResult.usAudio && (
-                        <button
-                          type="button"
-                          className="audio-play-btn"
-                          onClick={() => speakText(activeResult.word, activeResult.language)}
-                          title="Baland ovozda talaffuz qilish"
-                        >
-                          <IconVolume size={18} />
-                          <span>Talaffuz</span>
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        className="audio-play-btn"
+                        onClick={() => speakText(activeResult.word, activeResult.language)}
+                        title={t('dictListenAudio')}
+                      >
+                        <IconVolume size={18} />
+                        <span>{t('dictListenAudio')}</span>
+                      </button>
                     </div>
                   </div>
 
@@ -276,10 +282,10 @@ export const DictionaryView = ({
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-cambridge-external"
-                        title="Cambridge Dictionary rasmiy veb-saytida to'liq ko'rish"
+                        title={t('dictOpenCambridge')}
                       >
                         <IconExternalLink size={16} />
-                        <span>Cambridge'da ochish</span>
+                        <span>{t('dictOpenCambridge')}</span>
                       </a>
                     )}
                     <button
@@ -288,7 +294,7 @@ export const DictionaryView = ({
                       onClick={handleSaveCurrentWord}
                     >
                       <IconBookmark size={18} fill={isWordAlreadySaved ? 'currentColor' : 'none'} />
-                      <span>{isWordAlreadySaved ? 'Saqlangan' : "Lug'atga saqlash"}</span>
+                      <span>{isWordAlreadySaved ? t('dictSavedBtn') : t('dictSaveBtn')}</span>
                     </button>
                   </div>
                 </div>
@@ -299,23 +305,23 @@ export const DictionaryView = ({
                   </div>
                 )}
 
-                {/* Main Definition & Uzbek Translation */}
+                {/* Main Definition & Translations */}
                 <div className="meaning-highlight-box">
                   <div className="meaning-block">
-                    <span className="meaning-label">📌 Asosiy ma'nosi (Definition):</span>
-                    <p className="meaning-text-primary">{activeResult.meaning}</p>
+                    <span className="meaning-label">📌 {t('dictMainDefinition')}</span>
+                    <p className="meaning-text-primary">{activeResult.meaning || activeResult.definition}</p>
                   </div>
 
                   {activeResult.meaningUz && (
                     <div className="meaning-block uzbek-meaning-block">
-                      <span className="meaning-label uz-label">🇺🇿 O'zbekcha izohi & Tarjimasi:</span>
-                      <p className="meaning-text-uz">{activeResult.meaningUz}</p>
+                      <span className="meaning-label uz-label">🇺🇿 {t('dictUzbekMeaning')}</span>
+                      <p className="meaning-text-uz">{activeResult.meaningUz || activeResult.translation}</p>
                     </div>
                   )}
 
                   {activeResult.meaningRu && (
                     <div className="meaning-block">
-                      <span className="meaning-label">🇷🇺 Ruscha tarjimasi:</span>
+                      <span className="meaning-label">🇷🇺 {t('dictRussianMeaning')}</span>
                       <p className="meaning-text-ru">{activeResult.meaningRu}</p>
                     </div>
                   )}
@@ -325,19 +331,19 @@ export const DictionaryView = ({
                 {activeResult.examples && activeResult.examples.length > 0 && (
                   <div className="word-section-box">
                     <h3 className="section-subtitle">
-                      <IconBook size={18} /> Namunaviy gaplar & Kontekst (Examples):
+                      <IconBook size={18} /> {t('dictExamples')}
                     </h3>
                     <div className="examples-list">
                       {activeResult.examples.map((ex, idx) => (
                         <div key={idx} className="example-item">
                           <div className="example-text-row">
                             <span className="example-bullet">•</span>
-                            <span className="example-en">"{ex.text}"</span>
+                            <span className="example-en">"{ex.text || ex}"</span>
                             <button
                               type="button"
                               className="example-audio-btn"
-                              onClick={() => speakText(ex.text, activeResult.language)}
-                              title="Gapni tinglash"
+                              onClick={() => speakText(ex.text || ex, activeResult.language)}
+                              title={t('dictListenAudio')}
                             >
                               <IconVolume size={15} />
                             </button>
@@ -355,7 +361,7 @@ export const DictionaryView = ({
                 <div className="syn-ant-grid">
                   {activeResult.synonyms && activeResult.synonyms.length > 0 && (
                     <div className="lexicon-chips-box">
-                      <h4>🟢 Sinonimlar (Synonyms):</h4>
+                      <h4>🟢 {t('dictSynonyms')}</h4>
                       <div className="chips-flex">
                         {activeResult.synonyms.map((syn, i) => (
                           <button
@@ -366,7 +372,6 @@ export const DictionaryView = ({
                               setSearchQuery(syn);
                               handleSearch(syn, selectedLanguage);
                             }}
-                            title="Ushbu sinonim ma'nosini qidirish"
                           >
                             {syn}
                           </button>
@@ -377,7 +382,7 @@ export const DictionaryView = ({
 
                   {activeResult.antonyms && activeResult.antonyms.length > 0 && (
                     <div className="lexicon-chips-box">
-                      <h4>🔴 Antonimlar (Antonyms):</h4>
+                      <h4>🔴 {t('dictAntonyms')}</h4>
                       <div className="chips-flex">
                         {activeResult.antonyms.map((ant, i) => (
                           <button
@@ -388,7 +393,6 @@ export const DictionaryView = ({
                               setSearchQuery(ant);
                               handleSearch(ant, selectedLanguage);
                             }}
-                            title="Ushbu antonim ma'nosini qidirish"
                           >
                             {ant}
                           </button>
@@ -399,21 +403,21 @@ export const DictionaryView = ({
                 </div>
 
                 {/* Etymology & Mnemonics */}
-                {(activeResult.etymology || activeResult.mnemonicTip) && (
+                {(activeResult.etymology || activeResult.mnemonicTip || activeResult.mnemonic) && (
                   <div className="mnemonics-card">
                     {activeResult.etymology && (
                       <div className="mnemonic-sub">
                         <span className="mn-icon">🏛️</span>
                         <div>
-                          <strong>Kelib chiqishi:</strong> {activeResult.etymology}
+                          <strong>{t('dictEtymology')}</strong> {activeResult.etymology}
                         </div>
                       </div>
                     )}
-                    {activeResult.mnemonicTip && (
+                    {(activeResult.mnemonicTip || activeResult.mnemonic) && (
                       <div className="mnemonic-sub">
                         <span className="mn-icon"><IconLightbulb size={20} /></span>
                         <div>
-                          <strong>Xotira kaliti (Mnemonika):</strong> {activeResult.mnemonicTip}
+                          <strong>{t('dictMnemonic')}</strong> {activeResult.mnemonicTip || activeResult.mnemonic}
                         </div>
                       </div>
                     )}
@@ -425,8 +429,8 @@ export const DictionaryView = ({
                   <div className="ai-prompt-left">
                     <IconSparkles size={22} className="text-accent" />
                     <div>
-                      <strong>Ushbu so'zni AI Agent bilan chuqur o'rganmoqchimisiz?</strong>
-                      <p>Prof. Azamat grammatik tahlil va muloqot mashqlarini tayyorlab beradi.</p>
+                      <strong>{t('dictAiConsultTitle')}</strong>
+                      <p>{t('dictAiConsultSub')}</p>
                     </div>
                   </div>
                   <button
@@ -434,7 +438,7 @@ export const DictionaryView = ({
                     className="btn-accent-glow"
                     onClick={() => onConsultAgentWithWord(activeResult)}
                   >
-                    AI Agentga yuborish ➔
+                    {t('dictSendToAi')}
                   </button>
                 </div>
               </div>
@@ -447,16 +451,18 @@ export const DictionaryView = ({
               <div className="saved-panel-header">
                 <div className="saved-title-row">
                   <IconBookmark size={20} className="text-accent" />
-                  <h3>Mening Saqlangan So'zlarim</h3>
+                  <h3>{t('dictMySavedWords')}</h3>
                 </div>
-                <span className="saved-counter-badge">{savedWords.length} ta so'z</span>
+                <span className="saved-counter-badge">
+                  {savedWords.length} {t('dictSavedWordsCount')}
+                </span>
               </div>
 
               {savedWords.length === 0 ? (
                 <div className="empty-saved-state">
                   <IconBook size={36} className="empty-icon" />
-                  <p>Hozircha saqlangan so'zlar yo'q.</p>
-                  <span>Qidirilgan so'z kartasidagi "Lug'atga saqlash" tugmasini bosing.</span>
+                  <p>{t('dictNoSavedWords')}</p>
+                  <span>{t('dictSavePrompt')}</span>
                 </div>
               ) : (
                 <div className="saved-words-list-scroll">
@@ -479,7 +485,7 @@ export const DictionaryView = ({
                             type="button"
                             className="icon-mini-btn"
                             onClick={() => speakText(item.word, item.language)}
-                            title="Ovozni eshitish"
+                            title={t('dictListenAudio')}
                           >
                             <IconVolume size={16} />
                           </button>
@@ -487,14 +493,14 @@ export const DictionaryView = ({
                             type="button"
                             className="icon-mini-btn delete-mini-btn"
                             onClick={() => onDeleteSavedWord(item.word)}
-                            title="O'chirish"
+                            title={t('btnDelete')}
                           >
                             <IconTrash size={16} />
                           </button>
                         </div>
                       </div>
                       <p className="saved-item-uz-desc">
-                        {item.meaningUz || item.meaning}
+                        {item.meaningUz || item.translation || item.meaning}
                       </p>
                     </div>
                   ))}
@@ -507,101 +513,94 @@ export const DictionaryView = ({
         /* Flashcard Study Mode */
         <div className="flashcard-study-container">
           <div className="flashcard-controls-top">
-            <h3>Flashcard Takrorlash Mashg'uloti</h3>
+            <h3>{t('dictFlashcardTitle')}</h3>
             <span className="flashcard-progress-counter">
-              Kartochka: {savedWords.length > 0 ? flashcardIndex + 1 : 0} / {savedWords.length}
+              {t('dictCardProgress')} {flashcardPool.length > 0 ? flashcardIndex + 1 : 0} / {flashcardPool.length}
             </span>
           </div>
 
-          {savedWords.length === 0 ? (
-            <div className="empty-flashcards-box">
-              <p>Mashg'ulotni boshlash uchun avval bir nechta so'zni lug'atga saqlang.</p>
-              <button 
-                type="button" 
-                className="btn-primary"
-                onClick={() => setFlashcardMode(false)}
+          <div className="flashcard-box-centered">
+            {(() => {
+              const currentCard = flashcardPool[flashcardIndex] || flashcardPool[0];
+              if (!currentCard) return null;
+
+              return (
+                <div 
+                  className={`flashcard-3d-card ${isCardFlipped ? 'flipped' : ''}`}
+                  onClick={() => setIsCardFlipped(!isCardFlipped)}
+                >
+                  {!isCardFlipped ? (
+                    /* Front Face */
+                    <div className="card-face card-front">
+                      <span className="card-flip-hint">🔄 {t('dictCardFlipHint')}</span>
+                      <h2 className="card-word-huge">{currentCard.word}</h2>
+                      {currentCard.phonetic && (
+                        <span className="card-phonetic-text">{currentCard.phonetic}</span>
+                      )}
+                      <span className="card-pos-badge">{currentCard.partOfSpeech}</span>
+                      <button
+                        type="button"
+                        className="card-audio-play"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (currentCard.ukAudio) {
+                            playAudio(currentCard.ukAudio, currentCard.word, currentCard.language);
+                          } else {
+                            speakText(currentCard.word, currentCard.language);
+                          }
+                        }}
+                      >
+                        <IconVolume size={20} /> {t('dictListenAudio')}
+                      </button>
+                    </div>
+                  ) : (
+                    /* Back Face */
+                    <div className="card-face card-back">
+                      <span className="card-flip-hint">🔄 {t('dictCardFlipBackHint')}</span>
+                      <h3 className="card-back-title">{currentCard.word}</h3>
+                      <div className="card-back-uz-box">
+                        <strong>{t('dictMainDefinition')}</strong>
+                        <p>{currentCard.meaningUz || currentCard.translation || currentCard.meaning}</p>
+                      </div>
+                      {currentCard.examples?.[0] && (
+                        <div className="card-back-example">
+                          <em>"{currentCard.examples[0].text || currentCard.examples[0]}"</em>
+                          {currentCard.examples[0].translation && (
+                            <p className="card-back-ex-uz">↳ {currentCard.examples[0].translation}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Navigation Buttons */}
+            <div className="flashcard-nav-row">
+              <button
+                type="button"
+                className="btn-secondary"
+                disabled={flashcardIndex === 0}
+                onClick={() => {
+                  setIsCardFlipped(false);
+                  setFlashcardIndex(prev => Math.max(0, prev - 1));
+                }}
               >
-                Lug'atga Qaytish
+                {t('dictCardPrev')}
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  setIsCardFlipped(false);
+                  setFlashcardIndex(prev => (prev + 1) % flashcardPool.length);
+                }}
+              >
+                {t('dictCardNext')}
               </button>
             </div>
-          ) : (
-            <div className="flashcard-box-centered">
-              {(() => {
-                const currentCard = savedWords[flashcardIndex] || savedWords[0];
-                return (
-                  <div 
-                    className={`flashcard-3d-card ${isCardFlipped ? 'flipped' : ''}`}
-                    onClick={() => setIsCardFlipped(!isCardFlipped)}
-                  >
-                    {!isCardFlipped ? (
-                      /* Front Face */
-                      <div className="card-face card-front">
-                        <span className="card-flip-hint">🔄 Kartani aylantirish uchun bosing</span>
-                        <h2 className="card-word-huge">{currentCard.word}</h2>
-                        {currentCard.phonetic && (
-                          <span className="card-phonetic-text">{currentCard.phonetic}</span>
-                        )}
-                        <span className="card-pos-badge">{currentCard.partOfSpeech}</span>
-                        <button
-                          type="button"
-                          className="card-audio-play"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            speakText(currentCard.word, currentCard.language);
-                          }}
-                        >
-                          <IconVolume size={20} /> Talaffuz
-                        </button>
-                      </div>
-                    ) : (
-                      /* Back Face */
-                      <div className="card-face card-back">
-                        <span className="card-flip-hint">🔄 Kartani qaytarish uchun bosing</span>
-                        <h3 className="card-back-title">{currentCard.word}</h3>
-                        <div className="card-back-uz-box">
-                          <strong>Ma'nosi:</strong>
-                          <p>{currentCard.meaningUz || currentCard.meaning}</p>
-                        </div>
-                        {currentCard.examples?.[0] && (
-                          <div className="card-back-example">
-                            <em>"{currentCard.examples[0].text}"</em>
-                            {currentCard.examples[0].translation && (
-                              <p className="card-back-ex-uz">↳ {currentCard.examples[0].translation}</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-
-              {/* Navigation Buttons */}
-              <div className="flashcard-nav-row">
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  disabled={flashcardIndex === 0}
-                  onClick={() => {
-                    setIsCardFlipped(false);
-                    setFlashcardIndex(prev => Math.max(0, prev - 1));
-                  }}
-                >
-                  ◀ Oldingi
-                </button>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => {
-                    setIsCardFlipped(false);
-                    setFlashcardIndex(prev => (prev + 1) % savedWords.length);
-                  }}
-                >
-                  Keyingi So'z ▶
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       )}
     </div>
